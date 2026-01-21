@@ -23,6 +23,9 @@ type Props = {
   // list
   isLoading: boolean;
   bladeTypes: BladeType[];
+  header: string;
+  icon: React.ReactNode;
+  subheader: string;
 };
 
 export default function BladeTypeInputComponent({
@@ -35,24 +38,32 @@ export default function BladeTypeInputComponent({
   isSaving,
   isLoading,
   bladeTypes,
+  header,
+  icon,
+  subheader,
 }: Props) {
   return (
-    <div className="mx-auto grid max-w-[720px] gap-6 p-4">
-      <h1 className="text-2xl font-bold text-gray-900">Bladtyper</h1>
+    <div
+      style={{ marginBottom: "5rem" }}
+      className="mx-auto grid max-w-[720px] gap-6 p-4"
+    >
+      <h1 className="text-2xl font-bold text-gray-900">{header}</h1>
 
       {/* Legg inn bladtype */}
       <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
         <h2 className="mb-4 text-base font-semibold text-gray-900">
-          Legg inn bladtype
+          {subheader}
         </h2>
 
         <form onSubmit={onSubmit} className="grid gap-4">
           <div className="grid gap-1.5">
-            <label className="text-sm font-medium text-gray-700">Navn</label>
+            <label className="text-sm font-medium text-gray-700">
+              Navn på sagblad
+            </label>
             <input
               value={name}
               onChange={(e) => onNameChange(e.target.value)}
-              placeholder="F.eks. 75x1.1 22TPI"
+              placeholder="F.eks. 445/150-4.0/2.6-z36 MKV"
               className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
@@ -86,8 +97,12 @@ export default function BladeTypeInputComponent({
         </form>
       </div>
 
-      {/* Eksisterende bladtyper */}
-      <BladeListComponent isLoading={isLoading} bladeTypes={bladeTypes} />
+      <BladeListComponent
+        isLoading={isLoading}
+        bladeTypes={bladeTypes}
+        icon={icon}
+        header="Ingen bladtyper er lagt inn enda."
+      />
     </div>
   );
 }

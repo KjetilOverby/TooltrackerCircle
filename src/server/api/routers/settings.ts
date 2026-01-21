@@ -30,7 +30,6 @@ export const settingsRouter = createTRPCRouter({
         z.object({
           name: z.string().min(1),
           sawType: z.string().min(1).optional().nullable(),
-          side: optionalSideSchema, // "LEFT" | "RIGHT" | null
           note: z.string().optional().nullable(),
         }),
       )
@@ -43,7 +42,6 @@ export const settingsRouter = createTRPCRouter({
             orgId,
             name: input.name.trim(),
             sawType: input.sawType?.trim() ?? null,
-            side: input.side ?? null,
             note: input.note?.trim() ?? null,
             createdById: userId ?? null,
           },
