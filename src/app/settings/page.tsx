@@ -36,10 +36,8 @@ export default function Page() {
   };
 
   return (
-    <div style={{ padding: 16 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 16 }}>
-        Innstillinger
-      </h1>
+    <div className="p-10">
+      <h1 className="text-2xl text-blue-500">Innstillinger</h1>
 
       <BladeTypeInputComponent
         name={name}

@@ -124,7 +124,7 @@ const isAuthedMiddleware = t.middleware(async ({ ctx, next }) => {
   // Hent brukerens metadata fra Clerk
   const user = await currentUser(); // Clerk SDK for å hente brukerdata
   const userRole = user?.publicMetadata?.role; // Hent rollen fra publicMetadata
-  console.log(`User role: ${userRole}`); // Logg brukerens rolle for debugging
+
 
   if (userRole !== "Admin") {
     throw new TRPCError({ code: "FORBIDDEN", message: "You do not have permission to access this resource." });
@@ -149,7 +149,7 @@ const isAuthedMiddleware = t.middleware(async ({ ctx, next }) => {
 //   // Hent brukerens metadata fra Clerk
 //   const user = await currentUser(); // Clerk SDK for å hente brukerdata
 //   const userRole = user?.publicMetadata?.role; // Hent rollen fra publicMetadata
-//   console.log(`User role: ${userRole}`); // Logg brukerens rolle for debugging
+
 
 //   if (userRole !== "admin") {
 //     throw new TRPCError({ code: "FORBIDDEN", message: "You do not have permission to access this resource." });

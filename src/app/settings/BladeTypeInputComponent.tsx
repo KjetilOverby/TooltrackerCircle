@@ -1,4 +1,5 @@
 import React from "react";
+import BladeListComponent from "./ListComponent";
 
 type BladeType = {
   id: string;
@@ -36,56 +37,41 @@ export default function BladeTypeInputComponent({
   bladeTypes,
 }: Props) {
   return (
-    <div style={{ maxWidth: 720, padding: 16, display: "grid", gap: 18 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700 }}>Bladtyper</h1>
+    <div className="mx-auto grid max-w-[720px] gap-6 p-4">
+      <h1 className="text-2xl font-bold text-gray-900">Bladtyper</h1>
 
-      <div style={{ border: "1px solid #eee", borderRadius: 12, padding: 16 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>
+      {/* Legg inn bladtype */}
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <h2 className="mb-4 text-base font-semibold text-gray-900">
           Legg inn bladtype
         </h2>
 
-        <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
-          <div style={{ display: "grid", gap: 6 }}>
-            <label style={{ fontWeight: 600 }}>Navn</label>
+        <form onSubmit={onSubmit} className="grid gap-4">
+          <div className="grid gap-1.5">
+            <label className="text-sm font-medium text-gray-700">Navn</label>
             <input
               value={name}
               onChange={(e) => onNameChange(e.target.value)}
               placeholder="F.eks. 75x1.1 22TPI"
-              style={{
-                padding: 10,
-                border: "1px solid #ddd",
-                borderRadius: 8,
-              }}
+              className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
 
-          <div style={{ display: "grid", gap: 6 }}>
-            <label style={{ fontWeight: 600 }}>Notat (valgfritt)</label>
+          <div className="grid gap-1.5">
+            <label className="text-sm font-medium text-gray-700">
+              Notat (valgfritt)
+            </label>
             <textarea
               value={note}
               onChange={(e) => onNoteChange(e.target.value)}
               rows={3}
               placeholder="Valgfritt notat..."
-              style={{
-                padding: 10,
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                resize: "vertical",
-              }}
+              className="resize-y rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
 
           {errorMsg && (
-            <div
-              style={{
-                padding: 10,
-                borderRadius: 8,
-                background: "#fff5f5",
-                border: "1px solid #ffd1d1",
-                color: "#b00020",
-                fontSize: 14,
-              }}
-            >
+            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
               {errorMsg}
             </div>
           )}
@@ -93,56 +79,15 @@ export default function BladeTypeInputComponent({
           <button
             type="submit"
             disabled={isSaving}
-            style={{
-              padding: 12,
-              borderRadius: 10,
-              border: "none",
-              cursor: isSaving ? "not-allowed" : "pointer",
-              fontWeight: 700,
-              opacity: isSaving ? 0.7 : 1,
-            }}
+            className="mt-2 inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSaving ? "Lagrer…" : "Lagre bladtype"}
           </button>
         </form>
       </div>
 
-      <div style={{ border: "1px solid #eee", borderRadius: 12, padding: 16 }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>
-          Eksisterende bladtyper
-        </h2>
-
-        {isLoading ? (
-          <div>Laster…</div>
-        ) : bladeTypes.length === 0 ? (
-          <div style={{ color: "#666" }}>Ingen bladtyper enda.</div>
-        ) : (
-          <div style={{ display: "grid", gap: 8 }}>
-            {bladeTypes.map((bt) => (
-              <div
-                key={bt.id}
-                style={{
-                  border: "1px solid #f0f0f0",
-                  borderRadius: 10,
-                  padding: 10,
-                }}
-              >
-                <div style={{ fontWeight: 700 }}>{bt.name}</div>
-
-                {bt.note ? (
-                  <div style={{ fontSize: 13, color: "#666", marginTop: 4 }}>
-                    {bt.note}
-                  </div>
-                ) : null}
-
-                <div style={{ fontSize: 12, color: "#888", marginTop: 6 }}>
-                  Opprettet: {new Date(bt.createdAt).toLocaleString("no-NB")}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Eksisterende bladtyper */}
+      <BladeListComponent isLoading={isLoading} bladeTypes={bladeTypes} />
     </div>
   );
 }

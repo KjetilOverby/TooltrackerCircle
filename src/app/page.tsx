@@ -1,13 +1,8 @@
-import { LatestPost } from "~/app/_components/post";
 import Admin from "~/roles/Admin";
 import { api, HydrateClient } from "~/trpc/server";
 import TestCompnent from "./_components/TestCompnent";
-import Subscription from "./subscription/Subscription";
 
 export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
-  void api.post.getLatest.prefetch();
-
   return (
     <HydrateClient>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#ffffff] to-[#aec4e8]">
@@ -19,13 +14,7 @@ export default async function Home() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8"></div>
           <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-              {hello ? hello.greeting : "Loading tRPC query..."}
-            </p>
             <TestCompnent />
-            <Admin>
-              <LatestPost />
-            </Admin>
           </div>
         </div>
       </main>
