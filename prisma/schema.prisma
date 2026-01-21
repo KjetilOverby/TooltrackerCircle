@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-    provider = "mysql"
+    provider = "postgresql"
     url      = env("DATABASE_URL")
 }
 
@@ -20,4 +20,188 @@ model Post {
 
     @@index([orgId])
     @@index([userId])
+}
+
+model Saw {
+    id    String @id @default(cuid())
+    orgId String
+
+    name    String
+    sawType String? // f.eks. "Canter", "Resaw", "Kappsag"
+    active  Boolean @default(true)
+    side    String?
+
+    note String?
+
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    createdById String? // Clerk user id (valgfritt)
+
+    installs BladeInstall[]
+
+    @@unique([orgId, name])
+    @@index([orgId])
+}
+
+model BladeType {
+    id    String @id @default(cuid())
+    orgId String
+
+    name String // f.eks. "Bånd 75x1.1 22TPI", "Kappsag 350mm", osv.
+    note String?
+
+    active Boolean @default(true)
+
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    createdById String? // Clerk user id
+
+    blades SawBlade[]
+
+    @@unique([orgId, name])
+    @@index([orgId])
+}
+
+model SawBlade {
+    id    String @id @default(cuid())
+    orgId String
+
+    /// Serienummer / ID-nummer på bladet (unikt innen bedriften)
+    IdNummer String
+
+    kunde String? // hvis du vil beholde dette
+    note  String?
+
+    produsent String?
+    artikkel  String?
+    side      String?
+
+    bladeTypeId String
+    bladeType   BladeType @relation(fields: [bladeTypeId], references: [id], onDelete: Restrict)
+
+    deleted      Boolean @default(false)
+    deleteReason String?
+
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    createdById String? // Clerk user id
+
+    installs BladeInstall[]
+    services BladeService[]
+
+    @@unique([orgId, IdNummer])
+    @@index([orgId])
+    @@index([orgId, bladeTypeId])
+}
+
+model BladeInstall {
+    id    String @id @default(cuid())
+    orgId String
+
+    bladeId String
+    blade   SawBlade @relation(fields: [bladeId], references: [id], onDelete: Restrict)
+
+    sawId String
+    saw   Saw    @relation(fields: [sawId], references: [id], onDelete: Restrict)
+
+    /// Når bladet settes inn i saga (dato+kl)
+    installedAt   DateTime
+    installedById String? // Clerk user id
+
+    /// Når bladet tas ut (dato+kl)
+    removedAt   DateTime?
+    removedById String? // Clerk user id
+
+    /// Valgfritt: hvis “side” egentlig varierer per installasjon
+    side String?
+
+    note String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    runLogs BladeRunLog[]
+
+    @@index([orgId])
+    @@index([orgId, bladeId])
+    @@index([orgId, sawId])
+    @@index([orgId, installedAt])
+    @@index([orgId, removedAt])
+    // For å finne "aktivt blad i sag": where orgId, sawId, removedAt=null
+    @@index([orgId, sawId, removedAt])
+    // For å finne "er bladet aktivt montert et sted": where orgId, bladeId, removedAt=null
+    @@index([orgId, bladeId, removedAt])
+}
+
+model BladeService {
+    id    String @id @default(cuid())
+    orgId String
+
+    bladeId String
+    blade   SawBlade @relation(fields: [bladeId], references: [id], onDelete: Restrict)
+
+    /// f.eks. "Tannslipp", "Retting", "Rep", "Kontroll"
+    serviceType String
+
+    /// Inn/ut til service
+    datoInn DateTime
+    datoUt  DateTime?
+
+    /// Teller-data
+    antRep       Int @default(0)
+    antTannslipp Int @default(0)
+
+    /// “Hva var galt / hva ble gjort”
+    feilkode String?
+    handling String?
+    note     String?
+
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    createdById String? // Clerk user id
+
+    @@index([orgId])
+    @@index([orgId, bladeId])
+    @@index([orgId, datoInn])
+}
+
+model BladeRunLog {
+    id    String @id @default(cuid())
+    orgId String
+
+    /// Knytter målinger/hendelser til en spesifikk installasjon
+    installId String
+    install   BladeInstall @relation(fields: [installId], references: [id], onDelete: Cascade)
+
+    /// Når dette ble logget (kan være ved stopp/feil/service etc)
+    loggedAt DateTime @default(now())
+
+    /// Felt som ligner det du har i bandhistorikk (juster fritt)
+    sagtid     Float?
+    feilkode   String?
+    temperatur Int?
+
+    sideklaring Float?
+    ampere      Float?
+    stokkAnt    Int?
+
+    anmSag String?
+    anmKS  String?
+    sgSag  String?
+    sgKS   String?
+
+    /// Hvis du trenger ekstra tekstfelt
+    alt String?
+
+    /// Hvis “bladType / sawType” er nyttig som snapshot i loggen:
+    bladType String?
+    sawType  String?
+
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    createdById String? // Clerk user id
+
+    @@index([orgId])
+    @@index([orgId, installId])
+    @@index([orgId, loggedAt])
 }

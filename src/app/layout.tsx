@@ -13,7 +13,6 @@ import {
 import { Geist } from "next/font/google";
 
 import { TRPCReactProvider } from "~/trpc/react";
-import HeaderComponent from "./_components/layout/HeaderComponent";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -47,12 +46,6 @@ export default function RootLayout({
             <UserButton />
             <Link href="/" className="hover:underline">
               Home
-            </Link>
-            <Link href="/subscription" className="hover:underline">
-              Subscriptions
-            </Link>
-            <Link href="/admin" className="hover:underline">
-              Admin
             </Link>
           </SignedIn>
         </header>

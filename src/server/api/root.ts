@@ -1,4 +1,5 @@
 import { postRouter } from "~/server/api/routers/post";
+import { settingsRouter } from "~/server/api/routers/settings";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -7,19 +8,11 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
  * Alle underroutere som er lagt til i `/api/routers` skal legges til her manuelt.
  */
 export const appRouter = createTRPCRouter({
-  // Legg til underroutere her
   post: postRouter,
+  settings: settingsRouter, // 👈 legg til denne
 });
 
 // Eksporter type-definisjonen for API-et
 export type AppRouter = typeof appRouter;
 
-/**
- * Opprett en server-side caller for tRPC API-et.
- * Dette lar deg gjøre direkte kall til API-et fra serveren uten å gå via HTTP.
- * @example
- * const trpc = createCaller(createContext);
- * const res = await trpc.post.getLatest();
- *       ^? Post[]
- */
 export const createCaller = createCallerFactory(appRouter);

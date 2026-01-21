@@ -9,18 +9,7 @@ const TestCompnent = () => {
 
   console.log(organization?.name); // Må vise "test"
   console.log(membership?.role); // Må vise "admin"
-  return (
-    <div>
-      <h1>This is the test app</h1>
-      <Protect
-        role="org:admin"
-        fallback={<p>You do not have the permissions to create an invoice.</p>}
-      >
-        <h1>My new test</h1>
-      </Protect>
-      <OrganizationSwitcher />
-    </div>
-  );
+  return <div></div>;
 };
 
 export default TestCompnent;

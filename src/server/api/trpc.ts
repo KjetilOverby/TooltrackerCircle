@@ -139,30 +139,42 @@ const isAuthedMiddleware = t.middleware(async ({ ctx, next }) => {
   });
 });
 
-export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
-  const { userId } = ctx.auth;
+// export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
+//   const { userId } = ctx.auth;
 
-  if (!userId) {
-    throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to access this resource." });
-  }
+//   if (!userId) {
+//     throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in to access this resource." });
+//   }
 
-  // Hent brukerens metadata fra Clerk
-  const user = await currentUser(); // Clerk SDK for å hente brukerdata
-  const userRole = user?.publicMetadata?.role; // Hent rollen fra publicMetadata
-  console.log(`User role: ${userRole}`); // Logg brukerens rolle for debugging
+//   // Hent brukerens metadata fra Clerk
+//   const user = await currentUser(); // Clerk SDK for å hente brukerdata
+//   const userRole = user?.publicMetadata?.role; // Hent rollen fra publicMetadata
+//   console.log(`User role: ${userRole}`); // Logg brukerens rolle for debugging
 
-  if (userRole !== "admin") {
-    throw new TRPCError({ code: "FORBIDDEN", message: "You do not have permission to access this resource." });
-  }
+//   if (userRole !== "admin") {
+//     throw new TRPCError({ code: "FORBIDDEN", message: "You do not have permission to access this resource." });
+//   }
 
-  return next({
-    ctx: {
-      ...ctx,
-      auth: ctx.auth, // Pass the auth object to the next context
-      userMetadata: user?.publicMetadata, // Legg til metadata i konteksten
-    },
+//   return next({
+//     ctx: {
+//       ...ctx,
+//       auth: ctx.auth, // Pass the auth object to the next context
+//       userMetadata: user?.publicMetadata, // Legg til metadata i konteksten
+//     },
+//   });
+// });
+export const protectedProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(async ({ ctx, next }) => {
+    const { userId } = ctx.auth;
+
+    if (!userId) {
+      throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be logged in." });
+    }
+
+    return next();
   });
-});
+
 
 
 /**

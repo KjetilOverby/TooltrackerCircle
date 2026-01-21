@@ -13,7 +13,8 @@ export default async function Home() {
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#ffffff] to-[#aec4e8]">
         <div className="container flex flex-col items-center justify-center gap-12 px-1 py-5">
           <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            LUMBER <span className="text-[hsl(280,100%,70%)]">LOGIC</span>{" "}
+            TOOLTRACKER{" "}
+            <span className="text-[hsl(280,100%,70%)]">SIRKEL</span>{" "}
           </h1>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8"></div>
