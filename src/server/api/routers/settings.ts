@@ -116,7 +116,7 @@ export const settingsRouter = createTRPCRouter({
       .input(
         z.object({
           name: z.string().min(1),
-         
+         hasSide: z.boolean().default(false),
           note: z.string().optional().nullable(),
         }),
       )
@@ -128,7 +128,7 @@ export const settingsRouter = createTRPCRouter({
           data: {
             orgId,
             name: input.name.trim(),
-          
+            hasSide: input.hasSide,
             note: input.note?.trim() ?? null,
             createdById: userId ?? null,
           },
@@ -140,7 +140,7 @@ export const settingsRouter = createTRPCRouter({
         z.object({
           id: z.string().min(1),
           name: z.string().min(1).optional(),
-          side: optionalSideSchema,
+          hasSide: z.boolean().optional(),
           note: z.string().optional().nullable(),
           active: z.boolean().optional(),
         }),
@@ -158,7 +158,7 @@ export const settingsRouter = createTRPCRouter({
           where: { id: input.id },
           data: {
             ...(input.name !== undefined ? { name: input.name.trim() } : {}),
-            ...(input.side !== undefined ? { side: input.side ?? null } : {}),
+            ...(input.hasSide !== undefined ? { side: input.hasSide ?? null } : {}),
             ...(input.note !== undefined ? { note: input.note?.trim() ?? null } : {}),
             ...(input.active !== undefined ? { active: input.active } : {}),
           },
@@ -183,159 +183,5 @@ export const settingsRouter = createTRPCRouter({
       }),
   }),
 
-  // -----------------------
-  // SAW BLADE (Sagblader)
-  // -----------------------
-  sawBlade: createTRPCRouter({
-    list: protectedProcedure
-      .input(
-        z.object({
-          includeDeleted: z.boolean().optional(),
-        }).optional(),
-      )
-      .query(async ({ ctx, input }) => {
-        const orgId = requireOrgId(ctx.auth.orgId);
-        const includeDeleted = input?.includeDeleted ?? false;
 
-        return ctx.db.sawBlade.findMany({
-          where: {
-            orgId,
-            ...(includeDeleted ? {} : { deleted: false }),
-          },
-          include: {
-            bladeType: true,
-          },
-          orderBy: [{ deleted: "asc" }, { createdAt: "desc" }],
-        });
-      }),
-
-    create: protectedProcedure
-      .input(
-        z.object({
-          IdNummer: z.string().min(1),
-          bladeTypeId: z.string().min(1),
-          kunde: z.string().optional().nullable(),
-          produsent: z.string().optional().nullable(),
-          artikkel: z.string().optional().nullable(),
-          side: optionalSideSchema, // hvis du bruker side på bladet
-          note: z.string().optional().nullable(),
-        }),
-      )
-      .mutation(async ({ ctx, input }) => {
-        const orgId = requireOrgId(ctx.auth.orgId);
-        const userId = ctx.auth.userId;
-
-        // Sikre at bladtype tilhører samme org
-        const bt = await ctx.db.bladeType.findFirst({
-          where: { id: input.bladeTypeId, orgId },
-          select: { id: true },
-        });
-        if (!bt) throw new Error("Ugyldig bladtype for denne organisasjonen");
-
-        return ctx.db.sawBlade.create({
-          data: {
-            orgId,
-            IdNummer: input.IdNummer.trim(),
-            bladeTypeId: input.bladeTypeId,
-            kunde: input.kunde?.trim() ?? null,
-            produsent: input.produsent?.trim() ?? null,
-            artikkel: input.artikkel?.trim() ?? null,
-            side: input.side ?? null,
-            note: input.note?.trim() ?? null,
-            createdById: userId ?? null,
-          },
-        });
-      }),
-
-    update: protectedProcedure
-      .input(
-        z.object({
-          id: z.string().min(1),
-          // Hold det enkelt i v1: la IdNummer være valgfritt å endre.
-          // Hvis du vil låse IdNummer etter historikk, si ifra så legger jeg inn regelen.
-          IdNummer: z.string().min(1).optional(),
-          bladeTypeId: z.string().min(1).optional(),
-          kunde: z.string().optional().nullable(),
-          produsent: z.string().optional().nullable(),
-          artikkel: z.string().optional().nullable(),
-          side: optionalSideSchema,
-          note: z.string().optional().nullable(),
-        }),
-      )
-      .mutation(async ({ ctx, input }) => {
-        const orgId = requireOrgId(ctx.auth.orgId);
-
-        const existing = await ctx.db.sawBlade.findFirst({
-          where: { id: input.id, orgId },
-          select: { id: true },
-        });
-        if (!existing) throw new Error("Fant ikke sagbladet i denne organisasjonen");
-
-        if (input.bladeTypeId) {
-          const bt = await ctx.db.bladeType.findFirst({
-            where: { id: input.bladeTypeId, orgId },
-            select: { id: true },
-          });
-          if (!bt) throw new Error("Ugyldig bladtype for denne organisasjonen");
-        }
-
-        return ctx.db.sawBlade.update({
-          where: { id: input.id },
-          data: {
-            ...(input.IdNummer !== undefined ? { IdNummer: input.IdNummer.trim() } : {}),
-            ...(input.bladeTypeId !== undefined ? { bladeTypeId: input.bladeTypeId } : {}),
-            ...(input.kunde !== undefined ? { kunde: input.kunde?.trim() ?? null } : {}),
-            ...(input.produsent !== undefined ? { produsent: input.produsent?.trim() ?? null } : {}),
-            ...(input.artikkel !== undefined ? { artikkel: input.artikkel?.trim() ?? null } : {}),
-            ...(input.side !== undefined ? { side: input.side ?? null } : {}),
-            ...(input.note !== undefined ? { note: input.note?.trim() ?? null } : {}),
-          },
-        });
-      }),
-
-    softDelete: protectedProcedure
-      .input(
-        z.object({
-          id: z.string().min(1),
-          deleteReason: z.string().optional().nullable(),
-        }),
-      )
-      .mutation(async ({ ctx, input }) => {
-        const orgId = requireOrgId(ctx.auth.orgId);
-
-        const existing = await ctx.db.sawBlade.findFirst({
-          where: { id: input.id, orgId },
-          select: { id: true },
-        });
-        if (!existing) throw new Error("Fant ikke sagbladet i denne organisasjonen");
-
-        return ctx.db.sawBlade.update({
-          where: { id: input.id },
-          data: {
-            deleted: true,
-            deleteReason: input.deleteReason?.trim() ?? null,
-          },
-        });
-      }),
-
-    restore: protectedProcedure
-      .input(z.object({ id: z.string().min(1) }))
-      .mutation(async ({ ctx, input }) => {
-        const orgId = requireOrgId(ctx.auth.orgId);
-
-        const existing = await ctx.db.sawBlade.findFirst({
-          where: { id: input.id, orgId },
-          select: { id: true },
-        });
-        if (!existing) throw new Error("Fant ikke sagbladet i denne organisasjonen");
-
-        return ctx.db.sawBlade.update({
-          where: { id: input.id },
-          data: {
-            deleted: false,
-            deleteReason: null,
-          },
-        });
-      }),
-  }),
 });

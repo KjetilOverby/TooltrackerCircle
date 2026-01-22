@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { api } from "~/trpc/react";
-import BladeTypeInputComponent from "../settings/BladeTypeInputComponent";
+import BladeTypeInputComponent from "./BladeTypeInputComponent";
 import { BsMotherboardFill } from "react-icons/bs";
 
 import { GiCircularSawblade } from "react-icons/gi";
@@ -15,6 +15,7 @@ export default function Page() {
 
   const [name, setName] = useState("");
   const [note, setNote] = useState("");
+  const [hasSide, setHasSide] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const createBladeType = api.settings.bladeType.create.useMutation({
@@ -23,6 +24,7 @@ export default function Page() {
       setName("");
       setNote("");
       setErrorMsg(null);
+      setHasSide(false);
     },
     onError: (err) => {
       setErrorMsg(err.message ?? "Kunne ikke lagre bladtype.");
@@ -41,6 +43,8 @@ export default function Page() {
     },
   });
 
+  console.log(hasSide);
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setErrorMsg(null);
@@ -48,6 +52,7 @@ export default function Page() {
     createBladeType.mutate({
       name,
       note: note.length ? note : null,
+      hasSide: hasSide,
     });
   };
 
@@ -62,8 +67,8 @@ export default function Page() {
   };
 
   return (
-    <div className="p-10">
-      <h1 className="text-2xl text-blue-500">Innstillinger</h1>
+    <div className="min-h-screen bg-slate-200 p-10">
+      <h1 className="text-2xl text-gray-800">Innstillinger</h1>
 
       <BladeTypeInputComponent
         name={name}
@@ -78,6 +83,9 @@ export default function Page() {
         header="Sagbladtyper"
         icon={<GiCircularSawblade size={30} color="gray" />}
         subheader="Legg til sagbladtyper"
+        showHasSide={true}
+        hasSide={hasSide}
+        onHasSideChange={setHasSide}
       />
 
       <BladeTypeInputComponent
@@ -93,6 +101,9 @@ export default function Page() {
         header="Sagmaskiner"
         icon={<BsMotherboardFill size={30} color="gray" />}
         subheader="Legg til sagmaskiner"
+        showHasSide={false}
+        hasSide={hasSide}
+        onHasSideChange={setHasSide}
       />
     </div>
   );

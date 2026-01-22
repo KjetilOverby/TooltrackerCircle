@@ -1,4 +1,6 @@
 import React from "react";
+import styles from "./ListComponent.module.css";
+import { FaCheckCircle } from "react-icons/fa";
 
 interface ListComponentProps {
   isLoading: boolean;
@@ -7,9 +9,11 @@ interface ListComponentProps {
     name: string;
     note?: string | null;
     createdAt: Date | string;
+    hasSide?: boolean;
   }[];
-  icon: React.ReactNode; // Added icon property
+  icon: React.ReactNode;
   header: string;
+  hasSide?: boolean;
 }
 
 const ListComponent: React.FC<ListComponentProps> = ({
@@ -19,38 +23,39 @@ const ListComponent: React.FC<ListComponentProps> = ({
   header,
 }) => {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-      <h2 className="mb-4 text-base font-semibold text-gray-900">
-        Eksisterende bladtyper
-      </h2>
+    <div className={styles.listRoot}>
+      <div className={styles.boxEx}>
+        <h2 className={styles.listTitle}>Oppsett</h2>
+        <FaCheckCircle color="green" /> <p className={styles.meta}>Har side</p>
+      </div>
 
       {isLoading ? (
-        <div className="text-sm text-gray-500">Laster…</div>
+        <div className={styles.loading}>Laster…</div>
       ) : bladeTypes.length === 0 ? (
-        <div className="text-sm text-gray-500">{header}</div>
+        <div className={styles.empty}>{header}</div>
       ) : (
-        <div className="">
-          {bladeTypes.map((bt) => (
-            <div
-              key={bt.id}
-              className="flex items-center rounded-lg border border-gray-200 p-3 hover:bg-gray-50"
-              style={{ marginBottom: "8px" }}
-            >
-              <div className="p-5">{icon}</div>
-              <div>
-                <div className="text-sm font-bold text-gray-900">{bt.name}</div>
-                {bt.note && (
-                  <div className="mt-1 text-xs text-gray-600 italic">
-                    {bt.note}
-                  </div>
-                )}
-                <div className="mt-2 text-xs text-gray-400">
-                  Opprettet: {new Date(bt.createdAt).toLocaleString("no-NB")}
-                </div>
+        bladeTypes.map((bt) => (
+          <div key={bt.id} className={styles.item}>
+            <div className={styles.icon}>{icon}</div>
+
+            <div className={styles.content}>
+              <div className={styles.name}>{bt.name}</div>
+              {bt.hasSide ? (
+                <p className={styles.listTitle}>
+                  <FaCheckCircle color="green" />
+                </p>
+              ) : (
+                <div></div>
+              )}
+
+              {bt.note && <div className={styles.note}>{bt.note}</div>}
+
+              <div className={styles.meta}>
+                Opprettet: {new Date(bt.createdAt).toLocaleString("no-NB")}
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))
       )}
     </div>
   );

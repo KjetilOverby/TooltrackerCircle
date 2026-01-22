@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+    provider  = "postgresql"
+    url       = env("DATABASE_URL")
+    directUrl = env("DATABASE_DIRECT_URL")
 }
 
 model Post {
@@ -47,8 +48,9 @@ model BladeType {
     id    String @id @default(cuid())
     orgId String
 
-    name String // f.eks. "Bånd 75x1.1 22TPI", "Kappsag 350mm", osv.
-    note String?
+    name    String // f.eks. "Bånd 75x1.1 22TPI", "Kappsag 350mm", osv.
+    note    String?
+    hasSide Boolean @default(false) // om bladet har "side"-egenskap
 
     active Boolean @default(true)
 

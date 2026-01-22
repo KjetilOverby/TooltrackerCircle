@@ -1,0 +1,105 @@
+/* Basics */
+.listMuted {
+  margin-top: 16px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.right {
+  text-align: right;
+}
+
+.muted {
+  color: #9ca3af;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.2px;
+}
+
+.ellipsis {
+  display: inline-block;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+/* ✅ Table styling */
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* Header */
+.table thead th {
+  background: #f9fafb;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid #e5e7eb;
+  white-space: nowrap;
+
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+/* Cells */
+.table tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #111827;
+  vertical-align: middle;
+}
+
+/* Zebra + hover */
+.table tbody tr:nth-child(even) td {
+  background: #fcfcfd;
+}
+
+.table tbody tr:hover td {
+  background: #f9fafb;
+}
+
+/* Blade type cell (name + note) */
+.typeCell {
+  min-width: 0;
+}
+
+.typeSub {
+  margin-top: 3px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Pills */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  white-space: nowrap;
+}
+
+/* Mobile */
+@media (max-width: 720px) {
+  .ellipsis {
+    max-width: 160px;
+  }
+}
