@@ -15,6 +15,9 @@ export const settingsRouter = createTRPCRouter({
   // -----------------------
   // SAW (Sager / Maskiner)
   // -----------------------
+
+  
+
   saw: createTRPCRouter({
     list: protectedProcedure.query(async ({ ctx }) => {
       const orgId = requireOrgId(ctx.auth.orgId);
@@ -24,6 +27,42 @@ export const settingsRouter = createTRPCRouter({
         orderBy: [{ active: "desc" }, { name: "asc" }],
       });
     }),
+
+    listForMachines: protectedProcedure.query(async ({ ctx }) => {
+      const orgId = requireOrgId(ctx.auth.orgId);
+    
+      return ctx.db.saw.findMany({
+        where: { orgId },
+        orderBy: [{ active: "desc" }, { name: "asc" }],
+        select: {
+          id: true,
+          name: true,
+          sawType: true,
+          active: true,
+          side: true,
+          note: true,
+    
+          // aktiv install (removedAt=null) + bladets IdNummer
+          installs: {
+            where: { removedAt: null },
+            take: 1,
+            select: {
+              id: true,
+              installedAt: true,
+              blade: {
+                select: {
+                  id: true,
+                  IdNummer: true,
+                },
+              },
+            },
+          },
+        },
+      });
+    }),
+    
+
+    
 
     create: protectedProcedure
       .input(

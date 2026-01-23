@@ -83,7 +83,7 @@ export default function Page() {
         isLoading={bladeTypesQuery.isLoading}
         bladeTypes={bladeTypesQuery.data ?? []}
         header="Sagbladtyper"
-        icon={<GiCircularSawblade size={30} color="gray" />}
+        icon={<GiCircularSawblade size={30} color="mediumseagreen" />}
         subheader="Legg til sagbladtyper"
         showHasSide={true}
         hasSide={hasSide}
@@ -103,7 +103,7 @@ export default function Page() {
         isLoading={sawTypesQuery.isLoading}
         bladeTypes={sawTypesQuery.data ?? []}
         header="Sagmaskiner"
-        icon={<BsMotherboardFill size={30} color="gray" />}
+        icon={<BsMotherboardFill size={30} color="Tomato" />}
         subheader="Legg til sagmaskiner"
         showHasSide={false}
         hasSide={hasSide}

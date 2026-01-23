@@ -17,13 +17,15 @@ function requireOrgId(orgId: string | null | undefined) {
 
 export const sawBladeRouter = createTRPCRouter({
   list: protectedProcedure
-    .input(
-      z
-        .object({
-          includeDeleted: z.boolean().optional(),
-        })
-        .optional(),
-    )
+  .input(
+    z
+      .object({
+        includeDeleted: z.boolean().optional(),
+        q: z.string().trim().optional(),
+      })
+      .optional(),
+  )
+  
     .query(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.auth.orgId);
       const includeDeleted = input?.includeDeleted ?? false;

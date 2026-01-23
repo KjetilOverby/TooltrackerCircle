@@ -100,6 +100,9 @@ export default function RootLayout({
                 <Link href="/settings" className="link">
                   Innstillinger
                 </Link>
+                <Link href="/machines" className="link">
+                  Maskiner
+                </Link>
               </SignedIn>
             </header>
 

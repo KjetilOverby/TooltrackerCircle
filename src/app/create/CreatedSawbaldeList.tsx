@@ -45,7 +45,7 @@ const CreatedSawbladeList: React.FC<Props> = ({
 
           <tbody style={{ fontSize: "small" }} className={styles.tbody}>
             {sawBlades.map((blade) => (
-              <tr key={blade.id} className={styles.trBody}>
+              <tr key={blade.id}>
                 <td className={`${styles.td}`} title={blade.IdNummer}>
                   <span
                     style={{ fontWeight: "bolder", color: "#0f172a" }}
