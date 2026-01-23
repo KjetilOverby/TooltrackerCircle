@@ -24,7 +24,7 @@ const ListComponent: React.FC<ListComponentProps> = ({
 }) => {
   return (
     <div className={styles.listRoot}>
-      <div className={styles.boxEx}>
+      <div>
         <h2 className={styles.listTitle}>Oppsett</h2>
         <FaCheckCircle color="green" /> <p className={styles.meta}>Har side</p>
       </div>

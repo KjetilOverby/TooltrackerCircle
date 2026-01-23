@@ -118,6 +118,7 @@ export const settingsRouter = createTRPCRouter({
           name: z.string().min(1),
          hasSide: z.boolean().default(false),
           note: z.string().optional().nullable(),
+          artikkel: z.string().optional().nullable(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
@@ -130,6 +131,7 @@ export const settingsRouter = createTRPCRouter({
             name: input.name.trim(),
             hasSide: input.hasSide,
             note: input.note?.trim() ?? null,
+            artikkel: input.artikkel?.trim() ?? null,
             createdById: userId ?? null,
           },
         });

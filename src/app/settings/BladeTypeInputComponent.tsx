@@ -27,6 +27,8 @@ type Props = {
   showHasSide: boolean;
   hasSide: boolean;
   onHasSideChange: (value: boolean) => void;
+  onArtikkelChange: (value: string) => void;
+  artikkel: string;
 };
 
 export default function BladeTypeInputComponent({
@@ -45,6 +47,8 @@ export default function BladeTypeInputComponent({
   hasSide,
   onHasSideChange,
   showHasSide,
+  artikkel,
+  onArtikkelChange,
 }: Props) {
   return (
     <div className={styles.bladeRoot}>
@@ -60,6 +64,14 @@ export default function BladeTypeInputComponent({
               value={name}
               onChange={(e) => onNameChange(e.target.value)}
               placeholder="F.eks. 445/150-4.0/2.6-z36 MKV"
+            />
+          </div>
+          <div className={styles.field}>
+            <label>Artikkelnummer</label>
+            <input
+              value={artikkel}
+              onChange={(e) => onArtikkelChange(e.target.value)}
+              placeholder="Art nr"
             />
           </div>
 

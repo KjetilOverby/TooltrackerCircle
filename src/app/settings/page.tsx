@@ -17,6 +17,7 @@ export default function Page() {
   const [note, setNote] = useState("");
   const [hasSide, setHasSide] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [artikkel, setArtikkel] = useState("");
 
   const createBladeType = api.settings.bladeType.create.useMutation({
     onSuccess: async () => {
@@ -25,6 +26,7 @@ export default function Page() {
       setNote("");
       setErrorMsg(null);
       setHasSide(false);
+      setArtikkel("");
     },
     onError: (err) => {
       setErrorMsg(err.message ?? "Kunne ikke lagre bladtype.");
@@ -37,13 +39,12 @@ export default function Page() {
       setName("");
       setNote("");
       setErrorMsg(null);
+      setArtikkel("");
     },
     onError: (err) => {
       setErrorMsg(err.message ?? "Kunne ikke lagre sagtype.");
     },
   });
-
-  console.log(hasSide);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -53,6 +54,7 @@ export default function Page() {
       name,
       note: note.length ? note : null,
       hasSide: hasSide,
+      artikkel: artikkel.length ? artikkel : null,
     });
   };
 
@@ -86,6 +88,8 @@ export default function Page() {
         showHasSide={true}
         hasSide={hasSide}
         onHasSideChange={setHasSide}
+        artikkel={artikkel}
+        onArtikkelChange={setArtikkel}
       />
 
       <BladeTypeInputComponent

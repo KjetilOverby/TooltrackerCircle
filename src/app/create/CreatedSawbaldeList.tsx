@@ -1,6 +1,5 @@
 import React from "react";
 import styles from "./CreateSawbladeList.module.css";
-import { clerkClient } from "@clerk/nextjs/server";
 
 export type SawBlade = {
   id: string;
@@ -8,7 +7,9 @@ export type SawBlade = {
   side: string;
   produsent: string | null;
   createdAt: string | Date;
-  bladeType: { name: string };
+  note?: string | null;
+  bladeType: { name: string; note?: string | null };
+  artikkel?: string | null;
 };
 
 type Props = {
@@ -26,61 +27,88 @@ const CreatedSawbladeList: React.FC<Props> = ({
   if (isLoading) return <p className={styles.listMuted}>Laster sagblad…</p>;
   if (!sawBlades || sawBlades.length === 0)
     return <p className={styles.listMuted}>Ingen sagblad registrert enda.</p>;
-  console.log("styles.table =", styles.table);
 
   return (
-    <div>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th>ID / Serienr.</th>
-            <th>Notat</th>
-            <th>Bladtype</th>
-            <th>Side</th>
-            <th>Produsent</th>
-            <th className={styles.right}>Opprettet</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {sawBlades.map((blade) => (
-            <tr key={blade.id}>
-              <td className={styles.mono} title={blade.IdNummer}>
-                <span className={styles.ellipsis}>{blade.IdNummer}</span>
-              </td>
-
-              <td>
-                {blade.note ? (
-                  <span className={styles.ellipsis}>{blade.note}</span>
-                ) : (
-                  <span className={styles.muted}>–</span>
-                )}
-              </td>
-
-              <td title={blade.bladeType.name}>
-                <div className={styles.typeCell}>
-                  <div className={styles.ellipsis}>{blade.bladeType.name}</div>
-                  {blade.bladeType.note ? (
-                    <div className={styles.typeSub}>{blade.bladeType.note}</div>
-                  ) : null}
-                </div>
-              </td>
-
-              <td>
-                <span className={styles.pill}>{blade.side}</span>
-              </td>
-
-              <td title={blade.produsent ?? "–"}>
-                <span className={styles.ellipsis}>
-                  {blade.produsent ?? "–"}
-                </span>
-              </td>
-
-              <td className={styles.right}>{formatDate(blade.createdAt)}</td>
+    <div className={styles.tableCard}>
+      <div className={styles.tableScroll}>
+        <table className={styles.table}>
+          <thead className={styles.thead}>
+            <tr className={styles.trHead}>
+              <th className={styles.th}>ID / Serienr.</th>
+              <th className={styles.th}>Notat</th>
+              <th className={styles.th}>Bladtype</th>
+              <th className={styles.th}>Artikkel</th>
+              <th className={styles.th}>Produsent</th>
+              <th className={`${styles.th} ${styles.right}`}>Opprettet</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody style={{ fontSize: "small" }} className={styles.tbody}>
+            {sawBlades.map((blade) => (
+              <tr key={blade.id} className={styles.trBody}>
+                <td className={`${styles.td}`} title={blade.IdNummer}>
+                  <span
+                    style={{ fontWeight: "bolder", color: "#0f172a" }}
+                    className={styles.idNumber}
+                  >
+                    {blade.IdNummer}
+                  </span>
+                </td>
+
+                <td className={styles.td}>
+                  {blade.note ? (
+                    <span
+                      className={`${styles.ellipsis} ${styles.id}`}
+                      title={blade.note}
+                    >
+                      {blade.note}
+                    </span>
+                  ) : (
+                    <span className={styles.muted}>–</span>
+                  )}
+                </td>
+
+                <td className={styles.td}>
+                  <div className={styles.typeCellFull}>
+                    <div
+                      className={styles.typeName}
+                      title={blade.bladeType.name}
+                    >
+                      {blade.bladeType.name}{" "}
+                      {blade.side && (
+                        <span className={styles.pill}>{blade.side}</span>
+                      )}
+                    </div>
+
+                    {blade.bladeType.note ? (
+                      <div
+                        className={styles.typeNote}
+                        title={blade.bladeType.note}
+                      >
+                        {blade.bladeType.note}
+                      </div>
+                    ) : null}
+                  </div>
+                </td>
+
+                <td className={styles.td}>
+                  <span>{blade.bladeType.artikkel ?? "–"}</span>
+                </td>
+
+                <td className={styles.td} title={blade.produsent ?? "–"}>
+                  <span className={styles.ellipsis}>
+                    {blade.produsent ?? "–"}
+                  </span>
+                </td>
+
+                <td className={`${styles.td} ${styles.right}`}>
+                  {formatDate(blade.createdAt)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

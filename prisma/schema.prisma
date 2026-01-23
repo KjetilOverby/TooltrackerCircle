@@ -57,6 +57,7 @@ model BladeType {
     createdAt   DateTime @default(now())
     updatedAt   DateTime @updatedAt
     createdById String? // Clerk user id
+    artikkel    String?
 
     blades SawBlade[]
 
