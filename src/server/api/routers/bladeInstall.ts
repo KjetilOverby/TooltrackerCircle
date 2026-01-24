@@ -155,31 +155,46 @@ if (!orgId) {
 
     
     recent: protectedProcedure
-    .input(z.object({ take: z.number().min(1).max(50).default(15) }).optional())
+    .input(
+      z.object({
+        take: z.number().min(1).max(50).default(15),
+      }),
+    )
     .query(async ({ ctx, input }) => {
-        const orgId = ctx.auth.orgId;
-        if (!orgId) throw new Error("Du må være i en organisasjon for å bruke denne funksjonen");
-        
-      const take = input?.take ?? 15;
-
-      return ctx.db.bladeInstall.findMany({
+      const db = ctx.db;
+      if (!db) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "ctx.db mangler i tRPC context",
+        });
+      }
+  
+      const orgId = ctx.auth.orgId;
+      if (!orgId) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Du må være i en organisasjon.",
+        });
+      }
+  
+      return db.bladeInstall.findMany({
         where: {
           orgId,
-          removedAt: { not: null }, // kun avsluttede
+          removedAt: { not: null },
         },
         orderBy: { removedAt: "desc" },
-        take,
-        select: {
-          id: true,
-          installedAt: true,
-          removedAt: true,
-          removedReason: true,
-          removedNote: true,
-          saw: { select: { id: true, name: true } },
-          blade: { select: { id: true, IdNummer: true } },
+        take: input.take,
+        include: {
+          blade: true,
+          saw: true,          // 👈 DENNE manglet
+          _count: {
+            select: { runLogs: true },
+          },
         },
       });
+      
     }),
+  
 
 
 });

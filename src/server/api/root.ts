@@ -3,6 +3,7 @@ import { settingsRouter } from "~/server/api/routers/settings";
 import { sawBladeRouter } from "~/server/api/routers/sawBlade";
 import { usersRouter } from "~/server/api/routers/users";
 import { bladeInstallRouter } from "./routers/bladeInstall";
+import { bladeRunLogRouter } from "./routers/bladeRunLog";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /**
@@ -16,6 +17,7 @@ export const appRouter = createTRPCRouter({
   sawBlade: sawBladeRouter,
   users: usersRouter,
   bladeInstall: bladeInstallRouter,
+  bladeRunLog: bladeRunLogRouter,
 });
 
 // Eksporter type-definisjonen for API-et

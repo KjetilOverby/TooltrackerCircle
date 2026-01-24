@@ -1,4 +1,5 @@
 import "~/styles/globals.css";
+import HeaderComponent from "../app/_components/layout/HeaderComponent";
 
 import { type Metadata } from "next";
 import {
@@ -32,78 +33,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={geist.variable}>
       <body>
-        <style>{`
-          body {
-            margin: 0;
-            font-family: var(--font-geist-sans), system-ui, sans-serif;
-            background: #f3f4f6;
-            color: #111827;
-          }
-
-          .header {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            height: 64px;
-            padding: 0 16px;
-            border-bottom: 1px solid #e5e7eb;
-            background: #ffffff;
-          }
-
-          .link {
-            font-size: 14px;
-            color: #2563eb;
-            text-decoration: none;
-            font-weight: 500;
-          }
-
-          .link:hover {
-            text-decoration: underline;
-          }
-
-          .signupBtn {
-            height: 40px;
-            padding: 0 16px;
-            border-radius: 999px;
-            border: none;
-            background: #6c47ff;
-            color: #ffffff;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-          }
-
-          .signupBtn:hover {
-            opacity: 0.9;
-          }
-        `}</style>
-
         <ClerkProvider>
           <TRPCReactProvider>
             <header className="header">
-              <SignedOut>
-                <SignInButton />
-                <SignUpButton>
-                  <button className="signupBtn">Sign Up</button>
-                </SignUpButton>
-              </SignedOut>
-
-              <SignedIn>
-                <OrganizationSwitcher />
-                <UserButton />
-                <Link href="/" className="link">
-                  Home
-                </Link>
-                <Link href="/create" className="link">
-                  Opprett blad
-                </Link>
-                <Link href="/settings" className="link">
-                  Innstillinger
-                </Link>
-                <Link href="/machines" className="link">
-                  Maskiner
-                </Link>
-              </SignedIn>
+              <HeaderComponent />
             </header>
 
             {children}

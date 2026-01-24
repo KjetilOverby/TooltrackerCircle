@@ -129,12 +129,33 @@ const MachineList: React.FC<MachineListProps> = ({
         button { border:0; border-radius:10px; padding:12px 14px; font-size:14px; font-weight:600; cursor:pointer; background:#eef0f3; transition: transform .1s ease, background .15s ease; }
         button:hover:not(:disabled){ transform: translateY(-1px); }
         button:disabled { opacity: .45; cursor:not-allowed; transform:none; }
-        .primary { background:#2563eb; color:#fff; }
-        .primary:hover { background:#1d4ed8; }
-        .warning { background:#fbbf24; color:#111827; }
-        .warning:hover { background:#f59e0b; }
-        .danger { background:#dc2626; color:#fff; }
-        .danger:hover { background:#b91c1c; }
+       /* Standard handling – dempet blå/grå */
+.primary {
+  background: #3b5b7a;      /* støvete blå */
+  color: #ffffff;
+}
+.primary:hover {
+  background: #324d68;
+}
+
+/* Advarsel – varm, men ikke skrikete */
+.warning {
+  background: #d6b36a;      /* dempet gul/oker */
+  color: #2b2b2b;
+}
+.warning:hover {
+  background: #c9a655;
+}
+
+/* Fare – mørk rød, ikke alarm-rød */
+.danger {
+  background: #8f2d2d;      /* vinrød */
+  color: #ffffff;
+}
+.danger:hover {
+  background: #7a2626;
+}
+
 
       
 
@@ -158,9 +179,9 @@ const MachineList: React.FC<MachineListProps> = ({
                   <div className="meta">{saw.sawType ?? "—"}</div>
                 </div>
                 <div
-                  className={`badge ${isActive ? "badgeActive" : "badgeInactive"}`}
+                  className={`badge ${hasBlade ? "badgeActive" : "badgeInactive"}`}
                 >
-                  {isActive ? "Aktiv" : "Inaktiv"}
+                  {hasBlade ? "Aktiv" : "Inaktiv"}
                 </div>
               </div>
 

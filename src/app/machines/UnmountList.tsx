@@ -16,6 +16,9 @@ type RecentRow = {
   removedAt: Date | null;
   removedReason: string | null;
   removedNote: string | null;
+  _count: {
+    runLogs: number;
+  };
 };
 
 type Props = {
@@ -69,6 +72,31 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
       font-size:12px;
       color:#6b7280;
       }
+       
+   
+
+        /* 🔖 Pills */
+        .pill{
+          display:inline-block;
+          padding:2px 8px;
+          border-radius:999px;
+          font-size:12px;
+          font-weight:500;
+          border:1px solid transparent;
+         
+          white-space:nowrap;
+          nargin-top:4px;
+        }
+        .pillWarn{
+          background:#FEF3C7;   /* gul */
+          color:#92400E;
+          border-color:#FDE68A;
+        }
+        .pillOk{
+          background:#D1FAE5;   /* grønn */
+          color:#065F46;
+          border-color:#6EE7B7;
+        }
         `}</style>
 
       <div className="logHeader">
@@ -77,6 +105,9 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
       </div>
       <div className="logList">
         {rows.map((row) => {
+          const manglerDriftsdata = row._count.runLogs === 0;
+          console.log(manglerDriftsdata);
+
           const duration =
             row.removedAt != null
               ? formatDuration(
@@ -101,6 +132,15 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
                 {row.installedAt.toLocaleString()} →{" "}
                 {row.removedAt?.toLocaleString()} · Varighet: {duration}
                 {row.removedNote ? ` · ${row.removedNote}` : ""}
+              </div>
+              <div style={{ marginTop: "5px" }} className="logMain">
+                <span
+                  className={`pill ${
+                    manglerDriftsdata ? "pillWarn" : "pillOk"
+                  }`}
+                >
+                  {manglerDriftsdata ? "Driftsdata mangler" : "Har driftsdata"}
+                </span>
               </div>
             </div>
           );
