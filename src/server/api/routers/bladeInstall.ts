@@ -195,6 +195,113 @@ if (!orgId) {
       
     }),
   
-
-
+    bladeUnmountsByIdNummer: protectedProcedure
+    .input(
+      z.object({
+        idNummer: z.string().min(1),
+        take: z.number().min(1).max(50).default(50),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const db = ctx.db;
+      if (!db) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "ctx.db mangler i tRPC context",
+        });
+      }
+  
+      const orgId = ctx.auth.orgId;
+      if (!orgId) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Du må være i en organisasjon.",
+        });
+      }
+  
+      // 1) Finn bladet eksakt på IdNummer
+      const blade = await db.sawBlade.findFirst({
+        where: {
+          orgId,
+          IdNummer: input.idNummer,
+        },
+        select: {
+          id: true,
+          IdNummer: true,
+        },
+      });
+  
+      if (!blade) {
+        return {
+          blade: null,
+          rows: [],
+        };
+      }
+  
+      // 2) Finn demonteringer for dette bladet
+      const rows = await db.bladeInstall.findMany({
+        where: {
+          orgId,
+          bladeId: blade.id,
+          removedAt: { not: null },
+        },
+        orderBy: { removedAt: "desc" },
+        take: input.take,
+        include: {
+          blade: true,
+          saw: true,
+          _count: {
+            select: { runLogs: true },
+          },
+        },
+      });
+  
+      return {
+        blade,
+        rows,
+      };
+    }),
+  
+    unmountsBySawId: protectedProcedure
+    .input(
+      z.object({
+        sawId: z.string().min(1),
+        take: z.number().min(1).max(50).default(50),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const db = ctx.db;
+      if (!db) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "ctx.db mangler i tRPC context",
+        });
+      }
+  
+      const orgId = ctx.auth.orgId;
+      if (!orgId) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Du må være i en organisasjon.",
+        });
+      }
+  
+      return db.bladeInstall.findMany({
+        where: {
+          orgId,
+          sawId: input.sawId,
+          removedAt: { not: null },
+        },
+        orderBy: { removedAt: "desc" },
+        take: input.take,
+        include: {
+          blade: true,
+          saw: true,
+          _count: {
+            select: { runLogs: true },
+          },
+        },
+      });
+    }),
+  
 });

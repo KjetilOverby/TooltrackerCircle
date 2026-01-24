@@ -117,12 +117,8 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
               >
                 Servicehendelser
               </Link>
-              <Link
-                className="menuItem"
-                href="/service/feil"
-                onClick={closeAll}
-              >
-                Feil / stopp
+              <Link className="menuItem" href="/create" onClick={closeAll}>
+                Legg til sagblad
               </Link>
               <Link
                 className="menuItem"
@@ -133,6 +129,9 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
               </Link>
             </div>
           </details>
+          <Link href="/settings" className="navLink" onClick={closeAll}>
+            INNSTILLINGER
+          </Link>
         </nav>
       </div>
 
