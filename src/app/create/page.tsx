@@ -61,9 +61,7 @@ const Page = () => {
       IdNummer: form.bladeNumber,
       bladeTypeId: form.bladeTypeId,
       produsent: form.produsent.length ? form.produsent : null,
-      bladeNumber: form.bladeNumber,
       note: form.note.length ? form.note : null,
-      sawId: form.sawId.length ? form.sawId : null,
       side: form.side.length ? form.side : null,
     });
   };
@@ -74,12 +72,12 @@ const Page = () => {
         form={form}
         handleChange={handleChange}
         handleSubmit={handleSubmit}
-        errorMsg={errorMsg}
         bladeTypes={bladeTypesQuery.data ?? []}
         saws={sawsQuery.data ?? []}
         isLoading={createSawBlade.isPending}
       />
-      <CreatedSawbladeList sawBlades={sawbladeQuery?.data} />
+
+      <CreatedSawbladeList sawBlades={sawbladeQuery.data ?? []} />
     </div>
   );
 };

@@ -4,11 +4,15 @@ import styles from "./CreateSawbladeList.module.css";
 export type SawBlade = {
   id: string;
   IdNummer: string;
-  side: string;
-  produsent: string | null;
+  side?: string | null;
+  produsent?: string | null;
   createdAt: string | Date;
   note?: string | null;
-  bladeType: { name: string; note?: string | null };
+  bladeType: {
+    name: string;
+    note?: string | null;
+    artikkel?: string | null;
+  };
   artikkel?: string | null;
 };
 

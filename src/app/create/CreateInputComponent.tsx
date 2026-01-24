@@ -3,6 +3,7 @@ import styles from "./CreateInputComponent.module.css";
 
 interface CreateInputComponentProps {
   handleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+
   form: {
     bladeTypeId: string;
     bladeNumber: string;
@@ -11,12 +12,31 @@ interface CreateInputComponentProps {
     hasSide?: boolean;
     produsent: string;
   };
-  bladeTypes: { id: string; name: string; hasSide?: boolean }[];
+  saws: {
+    name: string;
+    id: string;
+    orgId: string;
+    createdAt: Date;
+    updatedAt: Date;
+    active: boolean;
+    sawType: string | null;
+    note: string | null;
+    side: string | null;
+    createdById: string | null;
+  }[];
+
+  bladeTypes: {
+    id: string;
+    name: string;
+    hasSide?: boolean;
+  }[];
+
   handleChange: (
     event: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => void;
+
   isLoading?: boolean;
 }
 

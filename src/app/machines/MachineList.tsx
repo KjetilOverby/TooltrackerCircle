@@ -4,12 +4,17 @@ interface MachineListProps {
   saws: Array<{
     id: string;
     name: string;
-    sawType?: string;
+    sawType?: string | null;
     active?: boolean;
-    installs?: Array<{ blade?: { IdNummer: string } }>;
+    installs?: Array<{
+      id: string;
+      installedAt: Date;
+      blade: { id: string; IdNummer: string } | null;
+    }>;
   }>;
-  openMountModal: (saw: any) => void;
-  openUninstallModal: (saw: any) => void;
+
+  openMountModal: (saw: MachineListProps["saws"][number]) => void;
+  openUninstallModal: (saw: MachineListProps["saws"][number]) => void;
 }
 
 const MachineList: React.FC<MachineListProps> = ({

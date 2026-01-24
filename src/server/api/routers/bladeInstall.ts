@@ -24,12 +24,17 @@ export const bladeInstallRouter = createTRPCRouter({
         });
       }
 
-      const orgId =
-  (ctx as any).orgId ??
-  (ctx as any).session?.orgId ??
-  (ctx as any).session?.user?.orgId ??
-  (ctx as any).auth?.orgId ??
-  (ctx as any).org?.id;
+      const orgId = ctx.auth.orgId;
+      if (!orgId) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message:
+            "Du må være i en organisasjon for å montere blad.",
+        });
+      }
+      
+    
+      
 
 if (!orgId) {
   throw new TRPCError({

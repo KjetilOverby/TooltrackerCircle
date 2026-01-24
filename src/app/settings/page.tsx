@@ -108,6 +108,8 @@ export default function Page() {
         showHasSide={false}
         hasSide={hasSide}
         onHasSideChange={setHasSide}
+        artikkel={artikkel}
+        onArtikkelChange={setArtikkel}
       />
     </div>
   );

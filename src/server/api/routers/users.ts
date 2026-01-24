@@ -11,7 +11,8 @@ export const usersRouter = createTRPCRouter({
       const users = await Promise.all(
         unique.map(async (id) => {
           try {
-            const u = await clerkClient.users.getUser(id);
+            const clerk = await clerkClient();
+const u = await clerk.users.getUser(id);
             return {
               id: u.id,
               name:

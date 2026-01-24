@@ -66,8 +66,8 @@ export default function MaskinerPage() {
       setSelectedSaw(null);
       setSelectedBlade(null);
       setSearch("");
-      sawsQuery.refetch();
-      recentQuery.refetch();
+      void sawsQuery.refetch();
+      void recentQuery.refetch();
     },
   });
 
@@ -75,8 +75,8 @@ export default function MaskinerPage() {
     onSuccess: () => {
       setUninstallOpen(false);
       setUninstallSaw(null);
-      sawsQuery.refetch();
-      recentQuery.refetch(); // hvis du har recent-logg
+      void sawsQuery.refetch();
+      void recentQuery.refetch();
     },
   });
 
@@ -85,7 +85,7 @@ export default function MaskinerPage() {
     setSelectedBlade(null);
     setSearch("");
     setOpen(true);
-    recentQuery.refetch();
+    void recentQuery.refetch();
   }
 
   function openUninstallModal(saw: SawForMachines) {
@@ -133,7 +133,10 @@ export default function MaskinerPage() {
         setRemovedNote={setRemovedNote}
       />
 
-      <UnmountList recentQuery={recentQuery as any} />
+      <UnmountList
+        rows={recentQuery.data ?? []}
+        isFetching={recentQuery.isFetching}
+      />
     </div>
   );
 }

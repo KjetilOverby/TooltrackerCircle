@@ -1,14 +1,23 @@
 import React from "react";
 
+interface UninstallPayload {
+  sawId: string;
+  removedReason: string;
+  removedNote?: string;
+}
+
 interface UninstallModalProps {
   uninstallOpen: boolean;
-  uninstallSaw: { id: string; name: string } | null; // Adjust the type as necessary
+  uninstallSaw: { id: string; name: string } | null;
   setUninstallOpen: (open: boolean) => void;
   removedReason: string;
   setRemovedReason: (reason: string) => void;
   removedNote: string;
   setRemovedNote: (note: string) => void;
-  uninstallMutation: { isPending: boolean; mutate: (data: any) => void }; // Adjust the type as necessary
+  uninstallMutation: {
+    isPending: boolean;
+    mutate: (data: UninstallPayload) => void;
+  };
 }
 
 const UninstallModal: React.FC<UninstallModalProps> = ({
