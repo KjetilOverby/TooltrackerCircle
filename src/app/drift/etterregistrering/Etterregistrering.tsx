@@ -10,25 +10,30 @@ function formatDuration(ms: number) {
   return `${hours} t ${minutes} min`;
 }
 
-type RecentRow = {
+// MINSTE felles shape UnmountList trenger.
+// Dette matcher både recentQuery og andre lister så lenge de har disse feltene.
+export type UnmountRow = {
   id: string;
-  saw: { id: string; name: string };
-  blade: { id: string; IdNummer: string };
+  saw: { name: string };
+  blade: { IdNummer: string };
   installedAt: Date;
   removedAt: Date | null;
   removedReason: string | null;
   removedNote: string | null;
-  _count: {
-    runLogs: number;
-  };
+  _count: { runLogs: number };
 };
 
-type Props = {
-  rows: RecentRow[];
+type Props<T extends UnmountRow> = {
+  rows: T[];
   isFetching: boolean;
+  onRunLog: (row: T) => void; // én callback, ikke to
 };
 
-const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
+const EtterregistreringList = <T extends UnmountRow>({
+  rows,
+  isFetching,
+  onRunLog,
+}: Props<T>) => {
   if (!rows.length) return null;
 
   return (
@@ -219,8 +224,7 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
         <div className="titleWrap">
           <div className="title">Siste demonteringer</div>
           <div className="subtitle">
-            Klikk på en rad for å følge opp driftsdata eller korrigere
-            demonterinfo.
+            Klikk på knappen for å etterregistrere driftsdata.
           </div>
         </div>
 
@@ -236,7 +240,6 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
       <div className="list">
         {rows.map((row) => {
           const manglerDriftsdata = row._count.runLogs === 0;
-          //  console.log(manglerDriftsdata);
 
           const duration =
             row.removedAt != null
@@ -289,13 +292,9 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
                 <button
                   type="button"
                   className="btn btnPrimary"
-                  onClick={() => {
-                    // TODO: åpne modal for å etterregistrere drift (BladeRunLog)
-                    // Bruk row.id (installId) som nøkkel
-                    console.log(
-                      "Etterregistrer driftsdata for install",
-                      row.id,
-                    );
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onRunLog(row);
                   }}
                 >
                   <svg className="icon" viewBox="0 0 24 24" fill="none">
@@ -313,7 +312,6 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
                   type="button"
                   className="btn btnGhost"
                   onClick={() => {
-                    // TODO: åpne modal for å redigere demonterdata (BladeInstall removedReason/removedNote/removedAt)
                     console.log("Rediger demonterdata for install", row.id);
                   }}
                 >
@@ -337,4 +335,4 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
   );
 };
 
-export default UnmountList;
+export default EtterregistreringList;

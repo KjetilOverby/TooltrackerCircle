@@ -4,18 +4,34 @@ import React, { useMemo, useState } from "react";
 import EtterregistreringList from "./Etterregistrering";
 import SearchDriftHistorikk, { type Mode } from "./SearchDriftHistorikk";
 import { api } from "~/trpc/react";
+import BladeRunLogModal from "./BladeRunLogModal";
 
 const Page = () => {
   const [mode, setMode] = useState<Mode>("BLADE");
-
-  // Blad-søk (eksakt)
   const [idNummer, setIdNummer] = useState("");
+
+  const [runLogOpen, setRunLogOpen] = useState(false);
+
+  const recentQuery = api.bladeInstall.recent.useQuery({ take: 15 });
+
+  type RecentRow = NonNullable<typeof recentQuery.data>[number];
+
+  const [selectedInstall, setSelectedInstall] = useState<RecentRow | null>(
+    null,
+  );
+
+  const openRunLogModal = (row: RecentRow) => {
+    setSelectedInstall(row);
+    setRunLogOpen(true);
+  };
+
+  const createRunLog = api.bladeRunLog.create.useMutation();
+
   const bladeQuery = api.bladeInstall.bladeUnmountsByIdNummer.useQuery(
     { idNummer: idNummer.trim(), take: 50 },
     { enabled: false },
   );
 
-  // Maskin-søk
   const [sawId, setSawId] = useState("");
   const sawsQuery = api.settings.saw.list.useQuery(undefined, {
     enabled: mode === "SAW",
@@ -42,8 +58,6 @@ const Page = () => {
         : "Søk demonteringer på blad"
       : "Søk demonteringer på maskin";
 
-  const recentQuery = api.bladeInstall.recent.useQuery({ take: 15 });
-
   return (
     <div className="container">
       <style>{`
@@ -53,6 +67,7 @@ const Page = () => {
       <EtterregistreringList
         rows={recentQuery.data ?? []}
         isFetching={recentQuery.isFetching}
+        onRunLog={openRunLogModal}
       />
 
       <SearchDriftHistorikk
@@ -70,6 +85,22 @@ const Page = () => {
         headerText={headerText}
         bladeQuery={bladeQuery}
       />
+
+      {runLogOpen && selectedInstall && (
+        <BladeRunLogModal
+          open={runLogOpen}
+          installId={selectedInstall.id}
+          sawName={selectedInstall.saw.name}
+          bladeIdNummer={selectedInstall.blade.IdNummer}
+          isSaving={createRunLog.isPending}
+          error={createRunLog.error?.message ?? null}
+          onClose={() => setRunLogOpen(false)}
+          onSave={async (input) => {
+            await createRunLog.mutateAsync(input);
+            await recentQuery.refetch();
+          }}
+        />
+      )}
     </div>
   );
 };

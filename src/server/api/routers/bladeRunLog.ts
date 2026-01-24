@@ -51,12 +51,6 @@ export const bladeRunLogRouter = createTRPCRouter({
         sideklaring: z.number().optional(),
         ampere: z.number().optional(),
         stokkAnt: z.number().int().optional(),
-
-        anmSag: z.string().optional(),
-        anmKS: z.string().optional(),
-        sgSag: z.string().optional(),
-        sgKS: z.string().optional(),
-
         alt: z.string().optional(),
 
         bladType: z.string().optional(),
@@ -123,10 +117,7 @@ export const bladeRunLogRouter = createTRPCRouter({
         ampere: z.number().optional().nullable(),
         stokkAnt: z.number().int().optional().nullable(),
 
-        anmSag: z.string().optional().nullable(),
-        anmKS: z.string().optional().nullable(),
-        sgSag: z.string().optional().nullable(),
-        sgKS: z.string().optional().nullable(),
+    
 
         alt: z.string().optional().nullable(),
 

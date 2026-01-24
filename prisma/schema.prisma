@@ -200,17 +200,8 @@ model BladeRunLog {
   ampere      Float?
   stokkAnt    Int?
 
-  anmSag String?
-  anmKS  String?
-  sgSag  String?
-  sgKS   String?
-
   /// Hvis du trenger ekstra tekstfelt
   alt String?
-
-  /// Hvis “bladType / sawType” er nyttig som snapshot i loggen:
-  bladType String?
-  sawType  String?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
