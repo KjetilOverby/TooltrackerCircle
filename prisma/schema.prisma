@@ -157,17 +157,21 @@ model BladeService {
   bladeId String
   blade   SawBlade @relation(fields: [bladeId], references: [id], onDelete: Restrict)
 
-  serviceType String
+  serviceType String?
+  serviceDone String?
 
-  datoInn DateTime
-  datoUt  DateTime?
+  datoInn             DateTime
+  datoUt              DateTime?
+  supplierCompletedAt DateTime?
 
   antRep       Int @default(0)
   antTannslipp Int @default(0)
 
-  feilkode String?
-  handling String?
-  note     String?
+  feilkode     String?
+  handling     String?
+  note         String?
+  noteCustomer String?
+  noteSupplier String?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
