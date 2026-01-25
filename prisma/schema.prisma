@@ -48,9 +48,10 @@ model BladeType {
   id    String @id @default(cuid())
   orgId String
 
-  name    String // f.eks. "Bånd 75x1.1 22TPI", "Kappsag 350mm", osv.
-  note    String?
-  hasSide Boolean @default(false) // om bladet har "side"-egenskap
+  name            String // f.eks. "Bånd 75x1.1 22TPI", "Kappsag 350mm", osv.
+  note            String?
+  hasSide         Boolean @default(false) // om bladet har "side"-egenskap
+  lagerBeholdning Int?    @default(0)
 
   active Boolean @default(true)
 

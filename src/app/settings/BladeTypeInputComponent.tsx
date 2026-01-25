@@ -24,11 +24,19 @@ type Props = {
   header: string;
   icon: React.ReactNode;
   subheader: string;
+
   showHasSide: boolean;
-  hasSide: boolean;
-  onHasSideChange: (value: boolean) => void;
-  onArtikkelChange: (value: string) => void;
-  artikkel: string;
+
+  // ✅ valgfri, så du kan droppe dem når showHasSide=false
+  hasSide?: boolean;
+  onHasSideChange?: (value: boolean) => void;
+
+  // ✅ valgfri, så sagmaskin-skjema slipper disse
+  artikkel?: string;
+  onArtikkelChange?: (value: string) => void;
+
+  lagerBeholdning?: number;
+  onLagerBeholdningChange?: (value: number | undefined) => void;
 };
 
 export default function BladeTypeInputComponent({
@@ -49,6 +57,8 @@ export default function BladeTypeInputComponent({
   showHasSide,
   artikkel,
   onArtikkelChange,
+  onLagerBeholdningChange,
+  lagerBeholdning,
 }: Props) {
   return (
     <div className={styles.bladeRoot}>
@@ -66,14 +76,33 @@ export default function BladeTypeInputComponent({
               placeholder="F.eks. 445/150-4.0/2.6-z36 MKV"
             />
           </div>
-          <div className={styles.field}>
-            <label>Artikkelnummer</label>
-            <input
-              value={artikkel}
-              onChange={(e) => onArtikkelChange(e.target.value)}
-              placeholder="Art nr"
-            />
-          </div>
+          {onArtikkelChange && (
+            <div className={styles.field}>
+              <label>Artikkelnummer</label>
+              <input
+                value={artikkel ?? ""}
+                onChange={(e) => onArtikkelChange(e.target.value)}
+                placeholder="Art nr"
+              />
+            </div>
+          )}
+          {onLagerBeholdningChange && (
+            <div className={styles.field}>
+              <label>Min antall lagerbeholdning</label>
+              <input
+                type="number"
+                value={lagerBeholdning ?? ""}
+                onChange={(e) =>
+                  onLagerBeholdningChange(
+                    Number.isNaN(e.target.valueAsNumber)
+                      ? undefined
+                      : e.target.valueAsNumber,
+                  )
+                }
+                placeholder="Antall i lagerbeholdning..."
+              />
+            </div>
+          )}
 
           <div className={styles.field}>
             <label>Notat (valgfritt)</label>

@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { api } from "~/trpc/react";
 import BladeTypeInputComponent from "./BladeTypeInputComponent";
 import { BsMotherboardFill } from "react-icons/bs";
-
 import { GiCircularSawblade } from "react-icons/gi";
 
 export default function Page() {
@@ -18,6 +17,7 @@ export default function Page() {
   const [hasSide, setHasSide] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [artikkel, setArtikkel] = useState("");
+  const [lagerBeholdning, setLagerBeholdning] = useState<number | null>(null);
 
   const createBladeType = api.settings.bladeType.create.useMutation({
     onSuccess: async () => {
@@ -27,6 +27,7 @@ export default function Page() {
       setErrorMsg(null);
       setHasSide(false);
       setArtikkel("");
+      setLagerBeholdning(null);
     },
     onError: (err) => {
       setErrorMsg(err.message ?? "Kunne ikke lagre bladtype.");
@@ -40,6 +41,7 @@ export default function Page() {
       setNote("");
       setErrorMsg(null);
       setArtikkel("");
+      setLagerBeholdning(null);
     },
     onError: (err) => {
       setErrorMsg(err.message ?? "Kunne ikke lagre sagtype.");
@@ -53,8 +55,9 @@ export default function Page() {
     createBladeType.mutate({
       name,
       note: note.length ? note : null,
-      hasSide: hasSide,
+      hasSide,
       artikkel: artikkel.length ? artikkel : null,
+      lagerBeholdning: lagerBeholdning ?? null,
     });
   };
 
@@ -90,6 +93,8 @@ export default function Page() {
         onHasSideChange={setHasSide}
         artikkel={artikkel}
         onArtikkelChange={setArtikkel}
+        lagerBeholdning={lagerBeholdning ?? undefined}
+        onLagerBeholdningChange={(v) => setLagerBeholdning(v ?? null)}
       />
 
       <BladeTypeInputComponent
@@ -106,10 +111,7 @@ export default function Page() {
         icon={<BsMotherboardFill size={30} color="Tomato" />}
         subheader="Legg til sagmaskiner"
         showHasSide={false}
-        hasSide={hasSide}
-        onHasSideChange={setHasSide}
-        artikkel={artikkel}
-        onArtikkelChange={setArtikkel}
+        // ikke send artikkel/lager her hvis du ikke vil ha dem
       />
     </div>
   );
