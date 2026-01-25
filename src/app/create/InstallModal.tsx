@@ -11,6 +11,7 @@ interface InstallModalProps {
     id: string;
     IdNummer: string;
     bladeType?: { name: string } | null;
+    side?: string;
   }>;
 
   selectedBlade: { id: string; IdNummer: string } | null;
@@ -106,7 +107,9 @@ const InstallModal: React.FC<InstallModalProps> = ({
                         <div>
                           <b>{b.IdNummer}</b>
                         </div>
-                        <div className="small">{b.bladeType?.name ?? ""}</div>
+                        <div className="small">
+                          {b.bladeType?.name ?? ""} {b.side}
+                        </div>
                       </div>
                       <div className="small">Velg</div>
                     </div>

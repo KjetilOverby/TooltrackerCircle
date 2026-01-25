@@ -1,19 +1,12 @@
+// app/layout.tsx
 import "~/styles/globals.css";
-import HeaderComponent from "../app/_components/layout/HeaderComponent";
-
 import { type Metadata } from "next";
-import {
-  ClerkProvider,
-  OrganizationSwitcher,
-  SignInButton,
-  SignUpButton,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/nextjs";
+import { ClerkProvider, SignedIn } from "@clerk/nextjs";
 import { Geist } from "next/font/google";
 import { TRPCReactProvider } from "~/trpc/react";
-import Link from "next/link";
+
+import HeaderComponent from "./_components/layout/HeaderComponent";
+import OrgGate from "./_components/orgGate";
 
 export const metadata: Metadata = {
   title: "Tooltracker",
@@ -35,9 +28,15 @@ export default function RootLayout({
       <body>
         <ClerkProvider>
           <TRPCReactProvider>
-            <header className="header">
+            {/* 1) Låser signed-in uten org -> /select-org */}
+            <OrgGate />
+
+            {/* 2) Låser signed-out visuelt (dekker ALT) */}
+
+            {/* 3) Header vises kun når innlogget (OrgGate sørger for org) */}
+            <SignedIn>
               <HeaderComponent />
-            </header>
+            </SignedIn>
 
             {children}
           </TRPCReactProvider>

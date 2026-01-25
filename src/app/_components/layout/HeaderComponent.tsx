@@ -58,7 +58,7 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
         {showOrg ? <OrganizationSwitcher /> : null}
 
         <nav className="nav">
-          <Link href="/" className="navLink" onClick={closeAll}>
+          <Link href="/startside" className="navLink" onClick={closeAll}>
             HJEM
           </Link>
 

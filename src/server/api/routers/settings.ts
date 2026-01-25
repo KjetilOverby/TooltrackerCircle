@@ -27,7 +27,6 @@ export const settingsRouter = createTRPCRouter({
         orderBy: [{ active: "desc" }, { name: "asc" }],
       });
     }),
-
     listForMachines: protectedProcedure.query(async ({ ctx }) => {
       const orgId = requireOrgId(ctx.auth.orgId);
     
@@ -42,7 +41,6 @@ export const settingsRouter = createTRPCRouter({
           side: true,
           note: true,
     
-          // aktiv install (removedAt=null) + bladets IdNummer
           installs: {
             where: { removedAt: null },
             take: 1,
@@ -53,6 +51,8 @@ export const settingsRouter = createTRPCRouter({
                 select: {
                   id: true,
                   IdNummer: true,
+                  side: true,
+                  bladeType: { select: { name: true } },
                 },
               },
             },

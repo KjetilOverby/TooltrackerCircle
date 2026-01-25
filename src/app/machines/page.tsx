@@ -97,46 +97,82 @@ export default function MaskinerPage() {
 
   return (
     <div className="page">
-      <h1>Maskiner</h1>
-      <p className="subtitle">Klikk Monter for å velge blad fra databasen.</p>
+      <div className="container">
+        <h1>Maskiner</h1>
+        <p className="subtitle">Klikk Monter for å velge blad fra databasen.</p>
 
-      {sawsQuery.isLoading && <p>Laster…</p>}
-      {sawsQuery.isError && <p>Feil: {sawsQuery.error.message}</p>}
+        {sawsQuery.isLoading && <p>Laster…</p>}
+        {sawsQuery.isError && <p>Feil: {sawsQuery.error.message}</p>}
 
-      <MachineList
-        saws={saws}
-        openMountModal={openMountModal}
-        openUninstallModal={openUninstallModal}
-      />
+        <MachineList
+          saws={saws}
+          openMountModal={openMountModal}
+          openUninstallModal={openUninstallModal}
+        />
 
-      <InstallModal
-        open={open}
-        setOpen={setOpen}
-        selectedSaw={selectedSaw}
-        search={search}
-        setSearch={setSearch}
-        bladesQuery={bladesQuery}
-        blades={blades}
-        selectedBlade={selectedBlade}
-        setSelectedBlade={setSelectedBlade}
-        installMutation={installMutation}
-      />
+        <InstallModal
+          open={open}
+          setOpen={setOpen}
+          selectedSaw={selectedSaw}
+          search={search}
+          setSearch={setSearch}
+          bladesQuery={bladesQuery}
+          blades={blades}
+          selectedBlade={selectedBlade}
+          setSelectedBlade={setSelectedBlade}
+          installMutation={installMutation}
+        />
 
-      <UninstallModal
-        uninstallOpen={uninstallOpen}
-        uninstallSaw={uninstallSaw}
-        setUninstallOpen={setUninstallOpen}
-        removedReason={removedReason}
-        setRemovedReason={setRemovedReason}
-        removedNote={removedNote}
-        uninstallMutation={uninstallMutation}
-        setRemovedNote={setRemovedNote}
-      />
+        <UninstallModal
+          uninstallOpen={uninstallOpen}
+          uninstallSaw={uninstallSaw}
+          setUninstallOpen={setUninstallOpen}
+          removedReason={removedReason}
+          setRemovedReason={setRemovedReason}
+          removedNote={removedNote}
+          uninstallMutation={uninstallMutation}
+          setRemovedNote={setRemovedNote}
+        />
 
-      <UnmountList
-        rows={recentQuery.data ?? []}
-        isFetching={recentQuery.isFetching}
-      />
+        <UnmountList
+          rows={recentQuery.data ?? []}
+          isFetching={recentQuery.isFetching}
+        />
+      </div>
+      <style jsx>{`
+        .page {
+          min-height: 100vh;
+          background:
+            radial-gradient(
+              1200px 420px at 20% -10%,
+              #e9eef5 0%,
+              transparent 60%
+            ),
+            radial-gradient(
+              1000px 420px at 100% 0%,
+              #eef2f7 0%,
+              transparent 55%
+            ),
+            #f6f7f9;
+        }
+
+        /* 🔥 Denne er nøkkelen */
+        .container {
+          max-width: 1180px; /* Ikke for bred */
+          margin: 0 auto;
+          padding: clamp(16px, 4vw, 32px);
+        }
+
+        /* Overskrift spacing */
+        .container h1 {
+          margin-bottom: 6px;
+        }
+
+        .subtitle {
+          margin-bottom: 22px;
+          color: #64748b;
+        }
+      `}</style>
     </div>
   );
 }
