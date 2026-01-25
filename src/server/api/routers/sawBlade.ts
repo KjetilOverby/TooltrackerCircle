@@ -75,7 +75,7 @@ export const sawBladeRouter = createTRPCRouter({
           artikkel: input.artikkel?.trim() ?? null,
           side: input.side ?? null,
           note: input.note?.trim() ?? null,
-          createdById: userId ?? null,
+          createdById: userId || "defaultUserId", // Replace "defaultUserId" with an appropriate default value
         },
       });
     }),
