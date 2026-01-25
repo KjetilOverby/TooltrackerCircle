@@ -139,10 +139,9 @@ export default function HjemPage() {
           <div className="heroRight">
             <div className="statusCard">
               <div className="statusTop">
-                <div className="statusTitle">Status nå</div>
                 <span className="pill ok">
                   <span className="dot ok" />
-                  Stabil drift
+                  Status
                 </span>
               </div>
 

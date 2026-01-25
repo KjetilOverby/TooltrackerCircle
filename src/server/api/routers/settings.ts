@@ -178,7 +178,7 @@ export const settingsRouter = createTRPCRouter({
         });
       }),
 
-    update: protectedProcedure
+      update: protectedProcedure
       .input(
         z.object({
           id: z.string().min(1),
@@ -187,27 +187,37 @@ export const settingsRouter = createTRPCRouter({
           note: z.string().optional().nullable(),
           active: z.boolean().optional(),
           lagerBeholdning: z.number().optional().nullable(),
+    
+          // ✅ manglet:
+          artikkel: z.string().optional().nullable(),
         }),
       )
       .mutation(async ({ ctx, input }) => {
         const orgId = requireOrgId(ctx.auth.orgId);
-
+    
         const existing = await ctx.db.bladeType.findFirst({
           where: { id: input.id, orgId },
           select: { id: true },
         });
         if (!existing) throw new Error("Fant ikke bladtypen i denne organisasjonen");
-
+    
         return ctx.db.bladeType.update({
           where: { id: input.id },
           data: {
             ...(input.name !== undefined ? { name: input.name.trim() } : {}),
-            ...(input.hasSide !== undefined ? { side: input.hasSide ?? null } : {}),
+            ...(input.hasSide !== undefined ? { hasSide: input.hasSide ?? null } : {}),
             ...(input.note !== undefined ? { note: input.note?.trim() ?? null } : {}),
             ...(input.active !== undefined ? { active: input.active } : {}),
+            ...(input.lagerBeholdning !== undefined
+              ? { lagerBeholdning: input.lagerBeholdning }
+              : {}),
+            ...(input.artikkel !== undefined
+              ? { artikkel: input.artikkel?.trim() ?? null }
+              : {}),
           },
         });
       }),
+    
 
     setActive: protectedProcedure
       .input(z.object({ id: z.string().min(1), active: z.boolean() }))
