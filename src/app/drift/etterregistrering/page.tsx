@@ -60,8 +60,18 @@ const Page = () => {
 
   return (
     <div className="container">
-      <style>{`
-        .container { margin: 0 40rem; }
+      <style jsx>{`
+        .container {
+          max-width: 1200px; /* eller 1100 / 1000 – smak og behag */
+          margin: 0 auto;
+          padding: 0 1rem; /* luft på mobil */
+        }
+
+        @media (min-width: 768px) {
+          .container {
+            padding: 0 2rem;
+          }
+        }
       `}</style>
 
       <EtterregistreringList
