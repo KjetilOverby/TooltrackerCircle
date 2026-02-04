@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { OrganizationSwitcher, UserButton } from "@clerk/nextjs";
+import { ClerkLoaded, ClerkLoading } from "@clerk/nextjs";
 
 type Props = {
   showOrg?: boolean;
@@ -25,7 +26,6 @@ function Icon({
     | "calendar"
     | "settings";
 }) {
-  // Enkle inline SVG-er (ingen dependency)
   const common = {
     width: 18,
     height: 18,
@@ -207,20 +207,26 @@ function Icon({
 export default function Navbar({ showOrg = true, showUser = true }: Props) {
   const pathname = usePathname();
 
-  const driftRef = useRef<HTMLDetailsElement>(null);
-  const serviceRef = useRef<HTMLDetailsElement>(null);
-
-  const closeAll = () => {
-    if (driftRef.current?.open) driftRef.current.open = false;
-    if (serviceRef.current?.open) serviceRef.current.open = false;
+  const refs = {
+    drift: useRef<HTMLDetailsElement>(null),
+    service: useRef<HTMLDetailsElement>(null),
+    oppsett: useRef<HTMLDetailsElement>(null),
   };
 
-  const closeOthers = (which: "drift" | "service") => {
-    if (which === "drift") {
-      if (serviceRef.current?.open) serviceRef.current.open = false;
-    } else {
-      if (driftRef.current?.open) driftRef.current.open = false;
-    }
+  const closeAll = () => {
+    Object.values(refs).forEach((r) => {
+      if (r.current?.open) r.current.open = false;
+    });
+  };
+
+  const closeOthers = (keep: keyof typeof refs) => {
+    (Object.keys(refs) as Array<keyof typeof refs>).forEach((k) => {
+      // Siden du sjekker refs[k].current?.open her...
+      if (k !== keep && refs[k].current?.open) {
+        // ...trenger du ikke "!" her. TypeScript har allerede resonnert seg frem til at den er OK.
+        refs[k].current.open = false;
+      }
+    });
   };
 
   useEffect(() => {
@@ -230,24 +236,39 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      const target = e.target as Node;
-      const drift = driftRef.current;
-      const service = serviceRef.current;
+      const target = e.target;
 
-      if (drift?.open && drift.contains(target)) return;
-      if (service?.open && service.contains(target)) return;
+      // Sikrer riktig type uten "as"
+      if (!(target instanceof Node)) {
+        closeAll();
+        return;
+      }
 
-      closeAll();
+      const clickedInsideOpenDropdown = Object.values(refs).some(
+        (ref) => ref.current?.open && ref.current.contains(target),
+      );
+
+      if (!clickedInsideOpenDropdown) closeAll();
     };
 
     document.addEventListener("mousedown", onClick);
     return () => document.removeEventListener("mousedown", onClick);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <header className="header">
       <div className="left">
-        {showOrg ? <OrganizationSwitcher /> : null}
+        {showOrg ? (
+          <>
+            <ClerkLoading>
+              <div className="clerkSkeleton" />
+            </ClerkLoading>
+            <ClerkLoaded>
+              <OrganizationSwitcher />
+            </ClerkLoaded>
+          </>
+        ) : null}
 
         <nav className="nav" aria-label="Hovedmeny">
           <Link href="/startside" className="navPill" onClick={closeAll}>
@@ -257,12 +278,11 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
             <span className="pillText">Hjem</span>
           </Link>
 
+          {/* DRIFT */}
           <details
-            ref={driftRef}
+            ref={refs.drift}
             className="dropdown"
-            onToggle={(e) => {
-              if (e.currentTarget.open) closeOthers("drift");
-            }}
+            onToggle={(e) => e.currentTarget.open && closeOthers("drift")}
           >
             <summary className="navPill navPillBtn">
               <span className="pillIcon">
@@ -343,12 +363,11 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
             </div>
           </details>
 
+          {/* SERVICE */}
           <details
-            ref={serviceRef}
+            ref={refs.service}
             className="dropdown"
-            onToggle={(e) => {
-              if (e.currentTarget.open) closeOthers("service");
-            }}
+            onToggle={(e) => e.currentTarget.open && closeOthers("service")}
           >
             <summary className="navPill navPillBtn">
               <span className="pillIcon">
@@ -393,23 +412,6 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
 
               <Link
                 className="menuItem"
-                href="/create"
-                onClick={closeAll}
-                role="menuitem"
-              >
-                <span className="menuIcon">
-                  <Icon name="plus" />
-                </span>
-                <span className="menuMain">
-                  <span className="menuTitle">Legg til sagblad</span>
-                  <span className="menuSub">
-                    Registrer nytt blad i systemet
-                  </span>
-                </span>
-              </Link>
-
-              <Link
-                className="menuItem"
                 href="/service/planlagt"
                 onClick={closeAll}
                 role="menuitem"
@@ -425,16 +427,87 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
             </div>
           </details>
 
-          <Link href="/settings" className="navPill" onClick={closeAll}>
-            <span className="pillIcon">
-              <Icon name="settings" />
-            </span>
-            <span className="pillText">Innstillinger</span>
-          </Link>
+          {/* OPPSETT */}
+          <details
+            ref={refs.oppsett}
+            className="dropdown"
+            onToggle={(e) => e.currentTarget.open && closeOthers("oppsett")}
+          >
+            <summary className="navPill navPillBtn">
+              <span className="pillIcon">
+                <Icon name="settings" />
+              </span>
+              <span className="pillText">Oppsett</span>
+              <span className="chev" aria-hidden>
+                ▾
+              </span>
+            </summary>
+
+            <div className="menu" role="menu">
+              <Link
+                className="menuItem"
+                href="/settings"
+                onClick={closeAll}
+                role="menuitem"
+              >
+                <span className="menuIcon">
+                  <Icon name="settings" />
+                </span>
+                <span className="menuMain">
+                  <span className="menuTitle">Innstillinger</span>
+                  <span className="menuSub">System og preferanser</span>
+                </span>
+              </Link>
+
+              <Link
+                className="menuItem"
+                href="/create"
+                onClick={closeAll}
+                role="menuitem"
+              >
+                <span className="menuIcon">
+                  <Icon name="plus" />
+                </span>
+                <span className="menuMain">
+                  <span className="menuTitle">Legg til sagblad</span>
+                  <span className="menuSub">
+                    Registrer nytt blad i systemet
+                  </span>
+                </span>
+              </Link>
+              <Link
+                className="menuItem"
+                href="/oversikt"
+                onClick={closeAll}
+                role="menuitem"
+              >
+                <span className="menuIcon">
+                  <Icon name="log" />
+                </span>
+                <span className="menuMain">
+                  <span className="menuTitle">Oversikt</span>
+                  <span className="menuSub">
+                    Oversikt over sagblad i systemet
+                  </span>
+                </span>
+              </Link>
+            </div>
+          </details>
         </nav>
       </div>
 
-      <div className="right">{showUser ? <UserButton /> : null}</div>
+      <div className="right">
+        {showUser ? (
+          <>
+            <ClerkLoading>
+              <div className="clerkSkeletonCircle" />
+            </ClerkLoading>
+            <ClerkLoaded>
+              <UserButton />
+            </ClerkLoaded>
+          </>
+        ) : null}
+      </div>
 
       <style>{`
         .header {
@@ -445,7 +518,7 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
           height: 60px;
           padding: 0 14px;
           border-bottom: 1px solid #e5e7eb;
-          background: rgba(255,255,255,0.9);
+          background: rgba(255, 255, 255, 0.9);
           backdrop-filter: blur(10px);
           position: sticky;
           top: 0;
@@ -472,7 +545,6 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
           margin-left: 6px;
         }
 
-        /* roligere enn uppercase + bold */
         .navPill {
           display: inline-flex;
           align-items: center;
@@ -501,12 +573,12 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
           display: inline-flex;
           width: 18px;
           height: 18px;
-          color: #6b7280; /* rolig ikonfarge */
+          color: #6b7280;
         }
 
         .pillText {
           color: #111827;
-          opacity: 0.9; /* roligere tekst */
+          opacity: 0.9;
           white-space: nowrap;
         }
 
@@ -537,7 +609,7 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
           border: 1px solid #e5e7eb;
           border-radius: 16px;
           padding: 8px;
-          box-shadow: 0 18px 40px rgba(0,0,0,0.12);
+          box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
           display: none;
         }
 
@@ -548,15 +620,22 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
         }
 
         @keyframes pop {
-          from { opacity: 0; transform: translateY(-4px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
+          from {
+            opacity: 0;
+            transform: translateY(-4px) scale(0.98);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+          }
         }
 
         .menuItem {
-          display: flex;
-          align-items: flex-start;
+          display: grid;
+          grid-template-columns: 28px 1fr;
+          align-items: center;
           gap: 10px;
-          padding: 10px 10px;
+          padding: 10px;
           border-radius: 12px;
           text-decoration: none;
           color: #111827;
@@ -577,7 +656,6 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
           border: 1px solid #eef2f7;
           color: #6b7280;
           flex: 0 0 auto;
-          margin-top: 1px;
         }
 
         .menuMain {

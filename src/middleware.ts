@@ -1,21 +1,37 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
-import { NextResponse } from 'next/server'
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
-const isAdminRoute = createRouteMatcher(['/admin(.*)'])
+const isPublicRoute = createRouteMatcher([
+  "/",                // <-- index er offentlig
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/select-org(.*)",  // må være tilgjengelig
+]);
 
 export default clerkMiddleware(async (auth, req) => {
-  // Protect all routes starting with `/admin`
-  if (isAdminRoute(req) && (await auth()).sessionClaims?.metadata?.role !== 'admin') {
-    const url = new URL('/', req.url)
-    return NextResponse.redirect(url)
+  // Slipp gjennom public routes
+  if (isPublicRoute(req)) return NextResponse.next();
+
+  // Sjekk innlogging uten å kaste/redirecte automatisk
+  const { userId, orgId } = await auth();
+
+  // Ikke innlogget -> send til /
+  if (!userId) {
+    return NextResponse.redirect(new URL("/", req.url));
   }
-})
+
+  // Innlogget, men mangler org -> send til /select-org
+  if (!orgId) {
+    return NextResponse.redirect(new URL("/select-org", req.url));
+  }
+
+  // OK
+  return NextResponse.next();
+});
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
-    '/(api|trpc)(.*)',
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/(api|trpc)(.*)",
   ],
-}
+};

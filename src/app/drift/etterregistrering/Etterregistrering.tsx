@@ -39,188 +39,221 @@ const EtterregistreringList = <T extends UnmountRow>({
   return (
     <section className="card">
       <style>{`
-        .card{
-          background:#fff;
-          border:1px solid #e6e7ea;
-          border-radius:18px;
-          padding:16px;
+        /* Card */
+        .card {
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          border-radius: 18px;
+          padding: 18px;
           margin: 2rem 0 0 0;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
         }
 
-        .header{
-          display:flex;
-          align-items:flex-start;
-          justify-content:space-between;
-          gap:12px;
-          margin-bottom:14px;
-        }
-        .titleWrap{
-          display:flex;
-          flex-direction:column;
-          gap:2px;
-        }
-        .title{
-          font-size:15px;
-          font-weight:800;
-          color:#111827;
-          letter-spacing:-0.01em;
-        }
-        .subtitle{
-          font-size:12px;
-          color:#6b7280;
+        /* Header */
+        .cardheader {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 14px;
+          margin-bottom: 16px;
         }
 
-        .badge{
-          display:inline-flex;
-          align-items:center;
-          gap:6px;
-          padding:6px 10px;
-          border-radius:999px;
-          border:1px solid #eef0f3;
-          background:#f7f8fb;
-          font-size:12px;
-          color:#374151;
-          white-space:nowrap;
+        .titleWrap {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
         }
-        .dot{
-          width:8px;height:8px;border-radius:999px;
+
+        .title {
+          font-size: 15px;
+          font-weight: 700;
+          color: #1f2937;
+          letter-spacing: -0.01em;
+        }
+
+        .subtitle {
+          font-size: 12px;
+          color: #6b7280;
+        }
+
+        /* Badge */
+        .badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 10px;
+          border-radius: 999px;
+          border: 1px solid #e5e7eb;
+          background: #f9fafb;
+          font-size: 12px;
+          color: #374151;
+        }
+
+        .dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 999px;
           background: #9ca3af;
         }
-        .dotLive{ background:#10b981; }
-        .dotFetching{ background:#f59e0b; }
-
-        .list{
-          display:flex;
-          flex-direction:column;
-          gap:10px;
+        .dotLive {
+          background: #22c55e;
+        }
+        .dotFetching {
+          background: #fbbf24;
         }
 
-        .row{
-          display:flex;
-          flex-direction:column;
-          gap:10px;
-          border:1px solid #eef0f3;
-          background: linear-gradient(180deg, #ffffff 0%, #fbfbfd 100%);
-          border-radius:16px;
-          padding:12px;
+        /* List */
+        .list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
         }
 
-        .top{
-          display:flex;
-          align-items:flex-start;
-          justify-content:space-between;
-          gap:12px;
+        .row {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          border: 1px solid #e5e7eb;
+          background: #ffffff;
+          border-radius: 16px;
+          padding: 14px;
         }
 
-        .main{
-          min-width:0;
-          display:flex;
-          flex-direction:column;
-          gap:6px;
+        .top {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 12px;
         }
 
-        .headline{
-          font-size:14px;
-          color:#111827;
-          line-height:1.2;
-        }
-        .headline b{ font-weight:800; }
-
-        .meta{
-          font-size:12px;
-          color:#6b7280;
-          line-height:1.35;
+        .main {
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
         }
 
-        .pills{
-          display:flex;
-          flex-wrap:wrap;
-          gap:6px;
-          margin-top:2px;
+        .headline {
+          font-size: 14px;
+          font-weight: 600;
+          color: #1f2937;
+          line-height: 1.25;
         }
-        .pill{
-          display:inline-flex;
-          align-items:center;
-          padding:4px 10px;
-          border-radius:999px;
-          font-size:12px;
-          font-weight:600;
-          border:1px solid transparent;
-          white-space:nowrap;
+        .headline b {
+          font-weight: 700;
         }
 
-        .pillReason{
-          background:#eef2ff;
-          color:#3730a3;
-          border-color:#e0e7ff;
-        }
-        .pillWarn{
-          background:#FEF3C7;
-          color:#92400E;
-          border-color:#FDE68A;
-        }
-        .pillOk{
-          background:#D1FAE5;
-          color:#065F46;
-          border-color:#6EE7B7;
+        .meta {
+          font-size: 12px;
+          color: #6b7280;
+          line-height: 1.4;
         }
 
-        .actions{
-          display:flex;
-          gap:8px;
-          flex-wrap:wrap;
-          justify-content:flex-end;
-          align-items:center;
+        /* Pills */
+        .pills {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-top: 4px;
         }
 
-        .btn{
-          appearance:none;
-          border:none;
-          border-radius:12px;
-          padding:8px 10px;
-          font-size:12px;
-          font-weight:700;
-          cursor:pointer;
-          transition: transform 0.02s ease, filter 0.15s ease;
-          display:inline-flex;
-          align-items:center;
-          gap:8px;
-          white-space:nowrap;
-        }
-        .btn:active{ transform: translateY(1px); }
-
-        .btnPrimary{
-          background:#111827;
-          color:#fff;
-        }
-        .btnPrimary:hover{ filter: brightness(1.07); }
-
-        .btnGhost{
-          background:#f3f4f6;
-          color:#111827;
-          border:1px solid #e5e7eb;
-        }
-        .btnGhost:hover{ filter: brightness(0.98); }
-
-        .icon{
-          width:16px;
-          height:16px;
-          display:inline-block;
+        .pill {
+          display: inline-flex;
+          align-items: center;
+          padding: 4px 10px;
+          border-radius: 999px;
+          font-size: 11px;
+          font-weight: 600;
+          border: 1px solid transparent;
+          white-space: nowrap;
         }
 
-        @media (min-width: 780px){
-          .row{
-            flex-direction:row;
-            align-items:flex-start;
-            justify-content:space-between;
+        .pillReason {
+          background: #eef2ff;
+          color: #3730a3;
+          border-color: #e0e7ff;
+        }
+
+        .pillWarn {
+          background: #fffbeb;
+          color: #92400e;
+          border-color: #fde68a;
+        }
+
+        .pillOk {
+          background: #ecfdf5;
+          color: #065f46;
+          border-color: #bbf7d0;
+        }
+
+        /* Actions */
+        .actions {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+          align-items: center;
+        }
+
+        /* Buttons – rolige */
+        .btn {
+          appearance: none;
+          border: none;
+          border-radius: 12px;
+          padding: 8px 12px;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          white-space: nowrap;
+          transition:
+            background 0.15s ease,
+            box-shadow 0.15s ease;
+        }
+
+        .btnPrimary {
+          background: #79b3a9;
+          color: #ffffff;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+        }
+        .btnPrimary:hover {
+          background: #99b3a9;
+        }
+
+        .btnGhost {
+          background: #f9fafb;
+          color: #1f2937;
+          border: 1px solid #e5e7eb;
+        }
+        .btnGhost:hover {
+          background: #f3f4f6;
+        }
+
+        .icon {
+          width: 16px;
+          height: 16px;
+          display: inline-block;
+          opacity: 0.85;
+        }
+
+        @media (min-width: 780px) {
+          .row {
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: space-between;
           }
-          .main{ max-width: 70%; }
-          .actions{ min-width: 260px; }
+          .main {
+            max-width: 70%;
+          }
+          .actions {
+            min-width: 260px;
+          }
         }
       `}</style>
 
-      <div className="header">
+      <div className="cardheader">
         <div className="titleWrap">
           <div className="title">Siste demonteringer</div>
           <div className="subtitle">
@@ -290,8 +323,9 @@ const EtterregistreringList = <T extends UnmountRow>({
 
               <div className="actions">
                 <button
+                  disabled={!manglerDriftsdata}
                   type="button"
-                  className="btn btnPrimary"
+                  className={`btn ${!manglerDriftsdata ? "btnGhost" : "btnPrimary"}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     onRunLog(row);

@@ -69,7 +69,7 @@ const Page = () => {
 
         @media (min-width: 768px) {
           .container {
-            padding: 0 2rem;
+            padding: 0 1rem 10rem 0;
           }
         }
       `}</style>

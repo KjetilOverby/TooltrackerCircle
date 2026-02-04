@@ -80,16 +80,22 @@ if (!orgId) {
         }
 
         if (currentForBlade && currentForBlade.sawId !== input.sawId) {
+          const toSaw = await tx.saw.findUnique({
+            where: { id: input.sawId },
+            select: { name: true },
+          });
+        
           await tx.bladeInstall.update({
             where: { id: currentForBlade.id },
             data: {
               removedAt: now,
               removedById: userId,
               removedReason: "Flyttet",
-              removedNote: `Flyttet til sag ${input.sawId}`,
+              removedNote: `Flyttet til sag ${toSaw?.name ?? input.sawId}`,
             },
           });
         }
+        
 
         const created = await tx.bladeInstall.create({
           data: {

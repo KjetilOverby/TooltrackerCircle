@@ -199,7 +199,7 @@ export default function BladeRunLogModal({
             <small className="hint">0,5-intervaller anbefales.</small>
           </label>
 
-          <label className="field">
+          {/* <label className="field">
             <span>Feilkode</span>
             <input
               type="text"
@@ -208,7 +208,7 @@ export default function BladeRunLogModal({
               onChange={(e) => setFeilkode(e.target.value)}
               disabled={isSaving}
             />
-          </label>
+          </label> */}
 
           <label className="field">
             <span>Temperatur (°C)</span>

@@ -2,12 +2,14 @@
 "use client";
 
 import { OrganizationSwitcher } from "@clerk/nextjs";
+import { OrgRedirect } from "../_components/OrgRedirect";
 
 export default function SelectOrgPage() {
   return (
     <main className="wrap">
       {/* bakgrunns “blobs” */}
       <div className="bg" aria-hidden="true">
+        <OrgRedirect />
         <div className="blob b1" />
         <div className="blob b2" />
         <div className="grid" />

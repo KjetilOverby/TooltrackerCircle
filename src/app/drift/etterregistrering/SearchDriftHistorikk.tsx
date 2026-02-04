@@ -231,7 +231,7 @@ const UnmountLookupCard: React.FC<UnmountLookupCardProps> = ({
             </div>
 
             <div className="hint">
-              Tips: dette er eksakt søk. Skriv hele bladnummeret og trykk Enter.
+              Dette er eksakt søk. Skriv hele bladnummeret og trykk Enter.
             </div>
 
             {bladeQuery.isFetched &&
