@@ -17,11 +17,16 @@ interface MachineListProps {
         bladeType?: { name: string };
         side?: string | null;
       } | null;
+      // (valgfritt, men anbefalt hvis du har det i data)
+      // removedAt?: Date | null;
     }>;
   }>;
 
   openMountModal: (saw: MachineListProps["saws"][number]) => void;
   openUninstallModal: (saw: MachineListProps["saws"][number]) => void;
+
+  // ✅ legg til denne:
+  openChangeBladeModal: (saw: MachineListProps["saws"][number]) => void;
 }
 
 function formatDateTimeNo(d: Date) {
@@ -51,6 +56,7 @@ const MachineList: React.FC<MachineListProps> = ({
   saws,
   openMountModal,
   openUninstallModal,
+  openChangeBladeModal,
 }) => {
   const now = new Date();
 
@@ -515,12 +521,16 @@ const MachineList: React.FC<MachineListProps> = ({
                     Demontering
                   </button>
 
-                  <button className="btn" disabled={!hasBlade}>
+                  <button
+                    onClick={() => openChangeBladeModal(saw)}
+                    className="btn"
+                    disabled={!hasBlade}
+                  >
                     Bytt blad
                   </button>
 
                   <button className="btn" disabled>
-                    Detaljer
+                    Flytt blad
                   </button>
                 </div>
               </div>

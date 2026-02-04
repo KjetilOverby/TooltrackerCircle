@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 
 interface InstallModalProps {
@@ -35,27 +36,108 @@ const InstallModal: React.FC<InstallModalProps> = ({
   setSelectedBlade,
   installMutation,
 }) => {
+  console.log(blades);
+
   return (
     <div>
       <style>{`
-              /* Modal */
-        .overlay { position:fixed; inset:0; background: rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; padding: 18px; }
-        .modal { width:min(760px, 100%); background:#fff; border-radius:14px; border:1px solid #e6e7ea; box-shadow: 0 10px 40px rgba(0,0,0,0.25); overflow:hidden; }
-        .modalHeader { padding:16px 18px; display:flex; justify-content:space-between; gap:12px; align-items:flex-start; border-bottom:1px solid #eee; }
-        .modalTitle { font-size:16px; font-weight:700; margin:0; }
-        .modalSub { font-size:13px; color:#666; margin-top:4px; }
-        .modalBody { padding: 16px 18px; display:flex; flex-direction:column; gap: 12px; }
-        .row { display:flex; gap:12px; flex-wrap:wrap; }
-        .input { flex: 1; min-width: 220px; border:1px solid #d8dbe2; border-radius:10px; padding:10px 12px; font-size:14px; }
-        .list { border:1px solid #e6e7ea; border-radius:12px; overflow:hidden; }
-        .listItem { display:flex; justify-content:space-between; gap:12px; padding:12px 12px; background:#fff; border-bottom:1px solid #f0f1f3; cursor:pointer; }
-        .listItem:hover { background:#f7f8fb; }
-        .listItem:last-child { border-bottom:none; }
-        .small { font-size:12px; color:#666; }
-        .selected { outline: 2px solid #2563eb; outline-offset:-2px; background:#f3f6ff; }
-        .footer { padding: 14px 18px; border-top:1px solid #eee; display:flex; justify-content:space-between; align-items:center; gap:12px; }
-        .hint { font-size:12px; color:#666; }
-            `}</style>
+        /* Modal */
+        .overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.45);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 18px;
+        }
+        .modal {
+          width: min(760px, 100%);
+          background: #fff;
+          border-radius: 14px;
+          border: 1px solid #e6e7ea;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+          overflow: hidden;
+        }
+        .modalHeader {
+          padding: 16px 18px;
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          align-items: flex-start;
+          border-bottom: 1px solid #eee;
+        }
+        .modalTitle {
+          font-size: 16px;
+          font-weight: 700;
+          margin: 0;
+        }
+        .modalSub {
+          font-size: 13px;
+          color: #666;
+          margin-top: 4px;
+        }
+        .modalBody {
+          padding: 16px 18px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .row {
+          display: flex;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+        .input {
+          flex: 1;
+          min-width: 220px;
+          border: 1px solid #d8dbe2;
+          border-radius: 10px;
+          padding: 10px 12px;
+          font-size: 14px;
+        }
+        .list {
+          border: 1px solid #e6e7ea;
+          border-radius: 12px;
+          overflow: hidden;
+        }
+        .listItem {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 12px 12px;
+          background: #fff;
+          border-bottom: 1px solid #f0f1f3;
+          cursor: pointer;
+        }
+        .listItem:hover {
+          background: #f7f8fb;
+        }
+        .listItem:last-child {
+          border-bottom: none;
+        }
+        .small {
+          font-size: 12px;
+          color: #666;
+        }
+        .selected {
+          outline: 2px solid #2563eb;
+          outline-offset: -2px;
+          background: #f3f6ff;
+        }
+        .footer {
+          padding: 14px 18px;
+          border-top: 1px solid #eee;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+        }
+        .hint {
+          font-size: 12px;
+          color: #666;
+        }
+      `}</style>
       {open && selectedSaw && (
         <div
           className="overlay"

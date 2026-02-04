@@ -73,104 +73,104 @@ const UnmountLookupCard: React.FC<UnmountLookupCardProps> = ({
 }) => {
   return (
     <section className="wrap">
-      <style>{`
-        .wrap{
-          background:#fff;
-          border:1px solid #e6e7ea;
-          border-radius:18px;
-          padding:16px;
+      <style jsx>{`
+        .wrap {
+          background: #fff;
+          border: 1px solid #e6e7ea;
+          border-radius: 18px;
+          padding: 16px;
           margin: 2rem 0 0 0;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
         }
-        .top{
-          display:flex;
-          flex-direction:column;
-          gap:12px;
-          margin-bottom:14px;
+        .top {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+          margin-bottom: 14px;
         }
-        .title{
-          font-size:15px;
-          font-weight:800;
-          color:#111827;
+        .title {
+          font-size: 15px;
+          font-weight: 800;
+          color: #111827;
         }
-        .sub{
-          font-size:12px;
-          color:#6b7280;
-          margin-top:2px;
+        .sub {
+          font-size: 12px;
+          color: #6b7280;
+          margin-top: 2px;
         }
-        .modeRow{
-          display:flex;
-          gap:8px;
-          flex-wrap:wrap;
+        .modeRow {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
         }
-        .modeBtn{
-          appearance:none;
-          border:1px solid #e5e7eb;
-          background:#f3f4f6;
-          color:#111827;
-          padding:8px 10px;
-          border-radius:12px;
-          font-size:12px;
-          font-weight:800;
-          cursor:pointer;
+        .modeBtn {
+          appearance: none;
+          border: 1px solid #e5e7eb;
+          background: #f3f4f6;
+          color: #111827;
+          padding: 8px 10px;
+          border-radius: 12px;
+          font-size: 12px;
+          font-weight: 800;
+          cursor: pointer;
         }
-        .modeBtnActive{
-          background:#111827;
-          color:#fff;
-          border-color:#111827;
+        .modeBtnActive {
+          background: #111827;
+          color: #fff;
+          border-color: #111827;
         }
-        .formRow{
-          display:flex;
-          gap:10px;
-          align-items:center;
-          flex-wrap:wrap;
+        .formRow {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+          flex-wrap: wrap;
         }
-        .input{
+        .input {
           flex: 1 1 280px;
-          border:1px solid #e5e7eb;
-          background:#fff;
-          padding:10px 12px;
-          border-radius:12px;
-          font-size:14px;
-          outline:none;
+          border: 1px solid #e5e7eb;
+          background: #fff;
+          padding: 10px 12px;
+          border-radius: 12px;
+          font-size: 14px;
+          outline: none;
         }
-        .select{
+        .select {
           flex: 1 1 280px;
-          border:1px solid #e5e7eb;
-          background:#fff;
-          padding:10px 12px;
-          border-radius:12px;
-          font-size:14px;
-          outline:none;
+          border: 1px solid #e5e7eb;
+          background: #fff;
+          padding: 10px 12px;
+          border-radius: 12px;
+          font-size: 14px;
+          outline: none;
         }
-        .btn{
-          appearance:none;
-          border:none;
-          border-radius:12px;
-          padding:10px 12px;
-          font-size:12px;
-          font-weight:800;
-          cursor:pointer;
-          background:#111827;
-          color:#fff;
+        .btn {
+          appearance: none;
+          border: none;
+          border-radius: 12px;
+          padding: 10px 12px;
+          font-size: 12px;
+          font-weight: 800;
+          cursor: pointer;
+          background: #111827;
+          color: #fff;
         }
-        .btn:disabled{
-          opacity:0.6;
-          cursor:not-allowed;
+        .btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
         }
-        .hint{
-          font-size:12px;
-          color:#6b7280;
-          margin-top:6px;
+        .hint {
+          font-size: 12px;
+          color: #6b7280;
+          margin-top: 6px;
         }
-        .empty{
-          margin-top:12px;
-          padding:12px;
-          border:1px dashed #e5e7eb;
-          background:#fafafa;
-          border-radius:14px;
-          color:#6b7280;
-          font-size:12px;
+        .empty {
+          margin-top: 12px;
+          padding: 12px;
+          border: 1px dashed #e5e7eb;
+          background: #fafafa;
+          border-radius: 14px;
+          color: #6b7280;
+          font-size: 12px;
         }
       `}</style>
 

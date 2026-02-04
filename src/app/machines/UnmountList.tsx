@@ -31,73 +31,70 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
 
   return (
     <div className="logWrap">
-      <style>{`
-        
-        .logWrap{
-      background:#fff;
-      border:1px solid #e6e7ea;
-      border-radius:14px;
-      padding:14px 16px;
-      margin: 2rem 0 0 0;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-      }
-      .logHeader{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:10px;
-      }
-      .logTitle{
-      font-size:14px;
-      font-weight:700;
-      }
-      .logList{
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      }
-      .logItem{
-      background:#f7f8fb;
-      border:1px solid #eef0f3;
-      border-radius:12px;
-      padding:10px 12px;
-      }
-      .logMain{
-      font-size:14px;
-      color:#111827;
-      }
-      .logMeta{
-      margin-top:4px;
-      font-size:12px;
-      color:#6b7280;
-      }
-       
-   
+      <style jsx>{`
+        .logWrap {
+          background: #fff;
+          border: 1px solid #e6e7ea;
+          border-radius: 14px;
+          padding: 14px 16px;
+          margin: 2rem 0 0 0;
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+        .logHeader {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin-bottom: 10px;
+        }
+        .logTitle {
+          font-size: 14px;
+          font-weight: 700;
+        }
+        .logList {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .logItem {
+          background: #f7f8fb;
+          border: 1px solid #eef0f3;
+          border-radius: 12px;
+          padding: 10px 12px;
+        }
+        .logMain {
+          font-size: 14px;
+          color: #111827;
+        }
+        .logMeta {
+          margin-top: 4px;
+          font-size: 12px;
+          color: #6b7280;
+        }
 
         /* 🔖 Pills */
-        .pill{
-          display:inline-block;
-          padding:2px 8px;
-          border-radius:999px;
-          font-size:12px;
-          font-weight:500;
-          border:1px solid transparent;
-         
-          white-space:nowrap;
-          nargin-top:4px;
+        .pill {
+          display: inline-block;
+          padding: 2px 8px;
+          border-radius: 999px;
+          font-size: 12px;
+          font-weight: 500;
+          border: 1px solid transparent;
+
+          white-space: nowrap;
+          nargin-top: 4px;
         }
-        .pillWarn{
-          background:#FEF3C7;   /* gul */
-          color:#92400E;
-          border-color:#FDE68A;
+        .pillWarn {
+          background: #fef3c7; /* gul */
+          color: #92400e;
+          border-color: #fde68a;
         }
-        .pillOk{
-          background:#D1FAE5;   /* grønn */
-          color:#065F46;
-          border-color:#6EE7B7;
+        .pillOk {
+          background: #d1fae5; /* grønn */
+          color: #065f46;
+          border-color: #6ee7b7;
         }
-        `}</style>
+      `}</style>
 
       <div className="logHeader">
         <div className="logTitle">Siste demonteringer</div>

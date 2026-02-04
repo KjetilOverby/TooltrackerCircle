@@ -303,5 +303,129 @@ if (!orgId) {
         },
       });
     }),
+
+
+
+    swap: protectedProcedure
+  .input(
+    z.object({
+      sawId: z.string().min(1),
+      newBladeId: z.string().min(1),
+      removedReason: z.string().min(1),
+      removedNote: z.string().optional().nullable(),
+    }),
+  )
+  .mutation(async ({ ctx, input }) => {
+    const orgId = ctx.auth.orgId;
+    if (!orgId)
+      throw new TRPCError({ code: "UNAUTHORIZED", message: "Mangler org" });
+
+    const userId = ctx.auth.userId ?? null;
+    const now = new Date();
+
+    return ctx.db.$transaction(async (tx) => {
+      // 1) Finn aktiv install på maskinen
+      const current = await tx.bladeInstall.findFirst({
+        where: { orgId, sawId: input.sawId, removedAt: null },
+        select: {
+          id: true,
+          installedAt: true,
+          bladeId: true,
+          blade: { select: { id: true, IdNummer: true } },
+          saw: { select: { id: true, name: true } },
+        },
+      });
+
+      // 2) Hent nytt blad (og sjekk org)
+      const newBlade = await tx.sawBlade.findFirst({
+        where: { orgId, id: input.newBladeId },
+        select: { id: true, IdNummer: true },
+      });
+
+      if (!newBlade) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Fant ikke nytt blad i denne organisasjonen",
+        });
+      }
+
+      // 3) Ikke tillat å bytte til samme blad som allerede står i
+      if (current?.bladeId && current.bladeId === input.newBladeId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Det bladet står allerede i denne maskinen",
+        });
+      }
+
+      // 4) Sørg for at nytt blad ikke allerede står i en annen maskin (aktiv install)
+      const newBladeActiveInstall = await tx.bladeInstall.findFirst({
+        where: {
+          orgId,
+          bladeId: input.newBladeId,
+          removedAt: null,
+        },
+        select: { id: true, sawId: true },
+      });
+
+      if (newBladeActiveInstall) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "Dette bladet er allerede montert i en annen maskin",
+        });
+      }
+
+      // 5) Avslutt gammel install (hvis finnes)
+      const uninstalled = current
+        ? await tx.bladeInstall.update({
+            where: { id: current.id },
+            data: {
+              removedAt: now,
+              removedById: userId,
+              removedReason: input.removedReason,
+              removedNote: input.removedNote ?? null,
+            },
+            select: {
+              id: true,
+              installedAt: true,
+              removedAt: true,
+              blade: { select: { id: true, IdNummer: true } },
+              saw: { select: { id: true, name: true } },
+            },
+          })
+        : null;
+
+      // 6) Opprett ny install
+      const installed = await tx.bladeInstall.create({
+        data: {
+          orgId,
+          sawId: input.sawId,
+          bladeId: input.newBladeId,
+          installedAt: now,
+          installedById: userId,
+        },
+        select: {
+          id: true,
+          installedAt: true,
+          blade: { select: { id: true, IdNummer: true } },
+          saw: { select: { id: true, name: true } },
+        },
+      });
+
+      return {
+        ok: true,
+        uninstalled: uninstalled
+          ? {
+              id: uninstalled.id,
+              installedAt: uninstalled.installedAt,
+              removedAt: uninstalled.removedAt,
+              blade: uninstalled.blade,
+              saw: uninstalled.saw,
+            }
+          : null,
+        installed,
+      };
+    });
+  }),
+
   
 });
