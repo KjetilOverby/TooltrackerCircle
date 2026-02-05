@@ -1,17 +1,14 @@
 "use client";
-
 import React from "react";
 
 function formatDuration(ms: number) {
   const totalMinutes = Math.max(0, Math.floor(ms / 60000));
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
-  if (hours <= 0) return `${minutes} min`;
-  return `${hours} t ${minutes} min`;
+  if (hours <= 0) return `${minutes}m`;
+  return `${hours}t ${minutes}m`;
 }
 
-// MINSTE felles shape UnmountList trenger.
-// Dette matcher både recentQuery og andre lister så lenge de har disse feltene.
 export type UnmountRow = {
   id: string;
   saw: { name: string };
@@ -26,7 +23,7 @@ export type UnmountRow = {
 type Props<T extends UnmountRow> = {
   rows: T[];
   isFetching: boolean;
-  onRunLog: (row: T) => void; // én callback, ikke to
+  onRunLog: (row: T) => void;
 };
 
 const EtterregistreringList = <T extends UnmountRow>({
@@ -37,328 +34,286 @@ const EtterregistreringList = <T extends UnmountRow>({
   if (!rows.length) return null;
 
   return (
-    <section className="card">
+    <section className="et-card">
       <style>{`
-        /* Card */
-        .card {
-          background: #ffffff;
-          border: 1px solid #e5e7eb;
-          border-radius: 18px;
-          padding: 18px;
-          margin: 2rem 0 0 0;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+        .et-card {
+          background: rgba(30, 41, 59, 0.7);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 20px;
+          padding: 24px;
+          margin: 2rem 0;
+          color: #f8fafc;
         }
 
-        /* Header */
-        .cardheader {
+        .et-header {
           display: flex;
-          align-items: flex-start;
           justify-content: space-between;
-          gap: 14px;
-          margin-bottom: 16px;
-        }
-
-        .titleWrap {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-
-        .title {
-          font-size: 15px;
-          font-weight: 700;
-          color: #1f2937;
-          letter-spacing: -0.01em;
-        }
-
-        .subtitle {
-          font-size: 12px;
-          color: #6b7280;
-        }
-
-        /* Badge */
-        .badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 6px 10px;
-          border-radius: 999px;
-          border: 1px solid #e5e7eb;
-          background: #f9fafb;
-          font-size: 12px;
-          color: #374151;
-        }
-
-        .dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 999px;
-          background: #9ca3af;
-        }
-        .dotLive {
-          background: #22c55e;
-        }
-        .dotFetching {
-          background: #fbbf24;
-        }
-
-        /* List */
-        .list {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        .row {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          border: 1px solid #e5e7eb;
-          background: #ffffff;
-          border-radius: 16px;
-          padding: 14px;
-        }
-
-        .top {
-          display: flex;
           align-items: flex-start;
-          justify-content: space-between;
-          gap: 12px;
+          margin-bottom: 24px;
         }
 
-        .main {
-          min-width: 0;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
+        .et-title {
+          font-size: 18px;
+          font-weight: 800;
+          letter-spacing: -0.02em;
         }
 
-        .headline {
-          font-size: 14px;
-          font-weight: 600;
-          color: #1f2937;
-          line-height: 1.25;
-        }
-        .headline b {
-          font-weight: 700;
-        }
-
-        .meta {
-          font-size: 12px;
-          color: #6b7280;
-          line-height: 1.4;
-        }
-
-        /* Pills */
-        .pills {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
+        .et-subtitle {
+          font-size: 13px;
+          color: #94a3b8;
           margin-top: 4px;
         }
 
-        .pill {
+        .et-badge {
           display: inline-flex;
           align-items: center;
-          padding: 4px 10px;
-          border-radius: 999px;
+          gap: 8px;
+          padding: 6px 12px;
+          background: rgba(15, 23, 42, 0.4);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 99px;
           font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+        }
+
+        .et-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #10b981;
+        }
+        .et-dot.fetching {
+          background: #f59e0b;
+          animation: et-pulse 1.5s infinite;
+        }
+
+        @keyframes et-pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .et-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .et-row {
+          background: rgba(15, 23, 42, 0.4);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+          border-radius: 16px;
+          padding: 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          transition: all 0.2s ease;
+        }
+
+        .et-row:hover {
+          background: rgba(15, 23, 42, 0.6);
+          border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .et-main {
+          flex: 1;
+        }
+
+        .et-headline {
+          font-size: 15px;
           font-weight: 600;
+          margin-bottom: 8px;
+        }
+        .et-headline b {
+          color: #3b82f6;
+          font-weight: 800;
+        }
+
+        .et-pills {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin-bottom: 12px;
+        }
+
+        .et-pill {
+          padding: 4px 10px;
+          border-radius: 8px;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
           border: 1px solid transparent;
-          white-space: nowrap;
         }
 
-        .pillReason {
-          background: #eef2ff;
-          color: #3730a3;
-          border-color: #e0e7ff;
-        }
+        .et-pill-reason { background: rgba(255,255,255,0.05); color: #cbd5e1; border-color: rgba(255,255,255,0.1); }
+        .et-pill-warn { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); }
+        .et-pill-ok { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.2); }
+        .et-pill-time { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border-color: rgba(59, 130, 246, 0.2); }
 
-        .pillWarn {
-          background: #fffbeb;
-          color: #92400e;
-          border-color: #fde68a;
-        }
-
-        .pillOk {
-          background: #ecfdf5;
-          color: #065f46;
-          border-color: #bbf7d0;
-        }
-
-        /* Actions */
-        .actions {
+        .et-meta {
+          font-size: 12px;
+          color: #64748b;
           display: flex;
           gap: 8px;
-          flex-wrap: wrap;
+        }
+
+        .et-actions {
+          display: flex;
+          gap: 8px;
           justify-content: flex-end;
-          align-items: center;
         }
 
-        /* Buttons – rolige */
-        .btn {
-          appearance: none;
-          border: none;
+        .et-btn {
+          padding: 10px 16px;
           border-radius: 12px;
-          padding: 8px 12px;
-          font-size: 12px;
-          font-weight: 600;
+          font-size: 13px;
+          font-weight: 700;
           cursor: pointer;
-          display: inline-flex;
+          display: flex;
           align-items: center;
-          gap: 6px;
-          white-space: nowrap;
-          transition:
-            background 0.15s ease,
-            box-shadow 0.15s ease;
+          gap: 8px;
+          transition: 0.2s;
+          border: 1px solid transparent;
         }
 
-        .btnPrimary {
-          background: #79b3a9;
-          color: #ffffff;
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+        .et-btn-primary {
+          background: #3b82f6;
+          color: white;
         }
-        .btnPrimary:hover {
-          background: #99b3a9;
-        }
-
-        .btnGhost {
-          background: #f9fafb;
-          color: #1f2937;
-          border: 1px solid #e5e7eb;
-        }
-        .btnGhost:hover {
-          background: #f3f4f6;
+        .et-btn-primary:hover:not(:disabled) {
+          background: #2563eb;
+          box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
         }
 
-        .icon {
-          width: 16px;
-          height: 16px;
-          display: inline-block;
-          opacity: 0.85;
+        .et-btn-ghost {
+          background: rgba(255,255,255,0.05);
+          color: #94a3b8;
+          border-color: rgba(255,255,255,0.1);
+        }
+        .et-btn-ghost:hover:not(:disabled) {
+          background: rgba(255,255,255,0.1);
+          color: #fff;
+        }
+
+        .et-btn:disabled {
+          opacity: 0.2;
+          cursor: not-allowed;
         }
 
         @media (min-width: 780px) {
-          .row {
-            flex-direction: row;
-            align-items: flex-start;
-            justify-content: space-between;
-          }
-          .main {
-            max-width: 70%;
-          }
-          .actions {
-            min-width: 260px;
-          }
+          .et-row { flex-direction: row; align-items: center; }
+          .et-actions { min-width: 320px; }
         }
       `}</style>
 
-      <div className="cardheader">
-        <div className="titleWrap">
-          <div className="title">Siste demonteringer</div>
-          <div className="subtitle">
-            Klikk på knappen for å etterregistrere driftsdata.
+      <div className="et-header">
+        <div className="et-title-wrap">
+          <div className="et-title">Etterregistrering</div>
+          <div className="et-subtitle">
+            Viktig: Manglende driftsdata bør legges inn fortløpende.
           </div>
         </div>
 
-        <div className="badge">
-          <span
-            className={`dot ${isFetching ? "dotFetching" : "dotLive"}`}
-            aria-hidden="true"
-          />
-          {isFetching ? "Oppdaterer…" : "Oppdatert nå"}
+        <div className="et-badge">
+          <span className={`et-dot ${isFetching ? "fetching" : ""}`} />
+          {isFetching ? "Synkroniserer" : "Klar"}
         </div>
       </div>
 
-      <div className="list">
+      <div className="et-list">
         {rows.map((row) => {
           const manglerDriftsdata = row._count.runLogs === 0;
-
-          const duration =
-            row.removedAt != null
-              ? formatDuration(
-                  row.removedAt.getTime() - row.installedAt.getTime(),
-                )
-              : "";
+          const duration = row.removedAt
+            ? formatDuration(
+                row.removedAt.getTime() - row.installedAt.getTime(),
+              )
+            : null;
 
           return (
-            <div key={row.id} className="row">
-              <div className="main">
-                <div className="headline">
-                  Demontering: <b>{row.blade.IdNummer}</b> fra{" "}
-                  <b>{row.saw.name}</b>
+            <div key={row.id} className="et-row">
+              <div className="et-main">
+                <div className="et-headline">
+                  Blad <b>{row.blade.IdNummer}</b> på <b>{row.saw.name}</b>
                 </div>
 
-                <div className="pills">
-                  {row.removedReason ? (
-                    <span className="pill pillReason">{row.removedReason}</span>
-                  ) : null}
+                <div className="et-pills">
+                  {row.removedReason && (
+                    <span className="et-pill et-pill-reason">
+                      {row.removedReason}
+                    </span>
+                  )}
 
                   <span
-                    className={`pill ${
-                      manglerDriftsdata ? "pillWarn" : "pillOk"
-                    }`}
+                    className={`et-pill ${manglerDriftsdata ? "et-pill-warn" : "et-pill-ok"}`}
                   >
                     {manglerDriftsdata
-                      ? "Driftsdata mangler"
-                      : "Har driftsdata"}
+                      ? "⚠️ Mangler driftsdata"
+                      : "✅ Driftsdata OK"}
                   </span>
 
-                  {duration ? (
-                    <span
-                      className="pill btnGhost"
-                      style={{ cursor: "default" }}
-                    >
-                      Varighet: {duration}
-                    </span>
-                  ) : null}
+                  {duration && (
+                    <span className="et-pill et-pill-time">⏱ {duration}</span>
+                  )}
                 </div>
 
-                <div className="meta">
-                  {row.installedAt.toLocaleString()} →{" "}
-                  {row.removedAt?.toLocaleString()}
-                  {row.removedNote ? ` · ${row.removedNote}` : ""}
+                <div className="et-meta">
+                  <span>{row.installedAt.toLocaleDateString("nb-NO")}</span>
+                  <span>→</span>
+                  <span>{row.removedAt?.toLocaleDateString("nb-NO")}</span>
+                  {row.removedNote && (
+                    <span style={{ fontStyle: "italic" }}>
+                      · {row.removedNote}
+                    </span>
+                  )}
                 </div>
               </div>
 
-              <div className="actions">
+              <div className="et-actions">
                 <button
                   disabled={!manglerDriftsdata}
-                  type="button"
-                  className={`btn ${!manglerDriftsdata ? "btnGhost" : "btnPrimary"}`}
+                  className="et-btn et-btn-primary"
                   onClick={(e) => {
                     e.stopPropagation();
                     onRunLog(row);
                   }}
                 >
-                  <svg className="icon" viewBox="0 0 24 24" fill="none">
+                  <svg
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
-                      d="M12 6v12M6 12h12"
-                      stroke="currentColor"
-                      strokeWidth="2"
                       strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 4v16m8-8H4"
                     />
                   </svg>
-                  Etterregistrer driftsdata
+                  Legg til data
                 </button>
 
                 <button
-                  type="button"
-                  className="btn btnGhost"
-                  onClick={() => {
-                    console.log("Rediger demonterdata for install", row.id);
-                  }}
+                  className="et-btn et-btn-ghost"
+                  onClick={() => console.log("Rediger", row.id)}
                 >
-                  <svg className="icon" viewBox="0 0 24 24" fill="none">
+                  <svg
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
                     <path
-                      d="M4 20h4l10.5-10.5a2.12 2.12 0 0 0 0-3L16.5 4.5a2.12 2.12 0 0 0-3 0L3 15v5z"
-                      stroke="currentColor"
-                      strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
                     />
                   </svg>
-                  Rediger demonterdata
+                  Rediger
                 </button>
               </div>
             </div>

@@ -60,7 +60,7 @@ const Page = () => {
 
   return (
     <div className="container">
-      <style jsx>{`
+      <style>{`
         .container {
           max-width: 1200px; /* eller 1100 / 1000 – smak og behag */
           margin: 0 auto;

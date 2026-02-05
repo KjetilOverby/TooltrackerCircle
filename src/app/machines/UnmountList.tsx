@@ -217,17 +217,31 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
                 <div className="logMeta">
                   <div className="metaItem">
                     <span>
-                      📅 {row.installedAt.toLocaleDateString("nb-NO")}
+                      📅{" "}
+                      {row.installedAt.toLocaleString("nb-NO", {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      })}
                     </span>
                     <span>→</span>
-                    <span>{row.removedAt?.toLocaleDateString("nb-NO")}</span>
+                    <span>
+                      {row.removedAt
+                        ? row.removedAt.toLocaleString("nb-NO", {
+                            dateStyle: "short",
+                            timeStyle: "short",
+                          })
+                        : "—"}
+                    </span>
                   </div>
+
                   {row.removedNote ? (
                     <div className="metaItem" style={{ color: "#d9dbdb" }}>
                       {row.removedNote}
                     </div>
                   ) : (
-                    "Demontert"
+                    <div className="metaItem" style={{ color: "#9ca3af" }}>
+                      Demontert
+                    </div>
                   )}
                 </div>
               </div>

@@ -19,7 +19,7 @@ const Page = () => {
     bladeNumber: "",
     note: "",
     produsent: "",
-    sawId: "" as string, // om du vil bruke sag (kan være "")
+    sawId: "" as string,
     side: "",
   });
 

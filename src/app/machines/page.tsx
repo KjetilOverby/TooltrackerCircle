@@ -236,7 +236,6 @@ export default function MaskinerPage() {
           openMountModal={openMountModal}
           openUninstallModal={openUninstallModal}
           openChangeBladeModal={openChangeBladeModal}
-          // ✅ NY: du må koble denne i MachineList (knapp “Flytt”)
           openMoveBladeModal={openMoveBladeModal}
         />
 
@@ -307,23 +306,10 @@ export default function MaskinerPage() {
             moveFromSaw ? { id: moveFromSaw.id, name: moveFromSaw.name } : null
           }
           saws={saws.map((s) => ({ id: s.id, name: s.name }))}
-          sawSearch={moveSawSearch}
-          setSawSearch={setMoveSawSearch}
-          toSawId={moveToSawId}
-          setToSawId={setMoveToSawId}
-          destIsLoading={moveDestQuery.isLoading}
-          destBladeIdNummer={destBladeIdNummer}
-          replaceReason={moveReplaceReason}
-          setReplaceReason={setMoveReplaceReason}
-          replaceNote={moveReplaceNote}
-          setReplaceNote={setMoveReplaceNote}
-          isSubmitting={moveMutation.isPending}
-          errorMessage={moveMutation.error?.message ?? null}
-          onSubmit={submitMove}
         />
       </div>
 
-      <style jsx>{`
+      <style>{`
         .page {
           min-height: 100vh;
           background:
