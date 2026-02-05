@@ -83,7 +83,7 @@ export default function MaskinerPage() {
     null,
   );
 
-  const [removedReason, setRemovedReason] = React.useState<string>("Sløvt");
+  const [removedReason, setRemovedReason] = React.useState<string>("");
   const [removedNote, setRemovedNote] = React.useState<string>("");
 
   const uninstallMutation = api.bladeInstall.uninstall.useMutation({
@@ -97,7 +97,7 @@ export default function MaskinerPage() {
 
   function openUninstallModal(saw: SawForMachines) {
     setUninstallSaw(saw);
-    setRemovedReason("Sløvt");
+    setRemovedReason("");
     setRemovedNote("");
     setUninstallOpen(true);
   }
@@ -120,7 +120,7 @@ export default function MaskinerPage() {
       setChangeSaw(null);
       setChangeOpen(false);
       setNewBladeId("");
-      setRemovedReason("Sløvt");
+      setRemovedReason("");
       setRemovedNote("");
       void sawsQuery.refetch();
       void recentQuery.refetch();
@@ -131,7 +131,7 @@ export default function MaskinerPage() {
     setChangeSaw(saw);
     setNewBladeId("");
     setBladeSearch("");
-    setRemovedReason("Sløvt");
+    setRemovedReason("");
     setRemovedNote("");
     setChangeOpen(true);
     void recentQuery.refetch();

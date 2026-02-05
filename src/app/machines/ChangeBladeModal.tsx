@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo } from "react";
+import REASONS from "../../appdata/changereasons";
 
 interface SwapPayload {
   sawId: string;
@@ -43,8 +44,6 @@ interface SwapBladeModalProps {
   };
 }
 
-const DEFAULT_REASON = "Sagbladet går bra";
-
 function useDebouncedValue<T>(value: T, delayMs: number) {
   const [debounced, setDebounced] = React.useState(value);
   useEffect(() => {
@@ -76,10 +75,6 @@ const SwapBladeModal: React.FC<SwapBladeModalProps> = ({
   setOpen,
   swapMutation,
 }) => {
-  useEffect(() => {
-    if (open && !removedReason) setRemovedReason(DEFAULT_REASON);
-  }, [open, removedReason, setRemovedReason]);
-
   // (kun UI) debounce for litt mindre “støy” i søkefeltet
   const debouncedSearch = useDebouncedValue(bladeSearch, 250);
 
@@ -208,7 +203,7 @@ const SwapBladeModal: React.FC<SwapBladeModalProps> = ({
           text-transform:uppercase;
         }
         .sbInput, .sbSelect, .sbTextarea{
-          width:100%;
+          width:80%;
           border:1px solid rgba(148,163,184,.45);
           background: rgba(255,255,255,.9);
           border-radius:14px;
@@ -383,54 +378,25 @@ const SwapBladeModal: React.FC<SwapBladeModalProps> = ({
               )}
             </div>
           </div>
-
-          <div className="sbGrid">
-            <div className="sbField">
-              <div className="sbLabel">Årsak (bladet som tas ut)</div>
-              <select
-                className="sbSelect"
-                value={removedReason}
-                onChange={(e) => setRemovedReason(e.target.value)}
-                disabled={swapMutation.isPending}
-              >
-                <option value="Sagbladet går bra">Sagbladet går bra</option>
-                <option value="Merker etter sagblad på skuroverflaten">
-                  Merker etter sagblad på skuroverflaten
+          <div className="sbField">
+            <div className="sbLabel">Årsak (bladet som tas ut)</div>
+            <select
+              className="sbSelect"
+              value={removedReason}
+              onChange={(e) => setRemovedReason(e.target.value)}
+              disabled={swapMutation.isPending}
+            >
+              <option value="" disabled>
+                --- Velg en årsak ---
+              </option>
+              {REASONS.map((reason) => (
+                <option key={reason} value={reason}>
+                  {reason}
                 </option>
-                <option value="Kast i sagbladet, dårlig skur">
-                  Kast i sagbladet, dårlig skur
-                </option>
-                <option value="Kast i sagbladet med en gang">
-                  Kast i sagbladet med en gang
-                </option>
-                <option value="Kast i sagbladet etter  en stund">
-                  Kast i sagbladet etter en stund
-                </option>
-                <option value="Feil mål">Feil mål</option>
-                <option value="Feil mål etter en stund">
-                  Feil mål etter en stund
-                </option>
-                <option value="Varmegang">Varmegang</option>
-                <option value="Sagbladet gått i metall/stein">
-                  Sagbladet gått i metall/stein
-                </option>
-                <option value="Annet">Annet</option>
-              </select>
-              <div className="sbHelp">
-                Lagres på installasjonen som avsluttes.
-              </div>
-            </div>
-
-            <div className="sbField">
-              <div className="sbLabel">Notat (valgfritt)</div>
-              <textarea
-                className="sbTextarea"
-                placeholder="F.eks. ujevn gange, brudd i tann, osv."
-                value={removedNote}
-                onChange={(e) => setRemovedNote(e.target.value)}
-                disabled={swapMutation.isPending}
-              />
-              <div className="sbHelp">Kort og konkret.</div>
+              ))}
+            </select>
+            <div className="sbHelp">
+              Lagres på installasjonen som avsluttes.
             </div>
           </div>
 

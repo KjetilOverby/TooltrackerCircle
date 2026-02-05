@@ -192,7 +192,7 @@ if (!orgId) {
         take: input.take,
         include: {
           blade: true,
-          saw: true,          // 👈 DENNE manglet
+          saw: true,         
           _count: {
             select: { runLogs: true },
           },

@@ -534,6 +534,7 @@ const MachineList: React.FC<MachineListProps> = ({
                   <button
                     onClick={() => openMoveBladeModal(saw)}
                     className="btn"
+                    disabled={!hasBlade}
                   >
                     Flytt blad
                   </button>

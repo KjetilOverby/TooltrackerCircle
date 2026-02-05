@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { api } from "~/trpc/react";
+import REASONS from "../../appdata/changereasons";
 
 type SimpleBlade = { id: string; IdNummer: string };
 type SimpleSaw = { id: string; name: string };
@@ -36,14 +37,14 @@ type Props = {
   onSubmit: () => void;
 };
 
-const REASONS = [
-  "Sløvt",
-  "Tannbrudd",
-  "Sporing",
-  "Produksjonsskifte",
-  "Flyttet",
-  "Annet",
-] as const;
+// const REASONS = [
+//   "Sløvt",
+//   "Tannbrudd",
+//   "Sporing",
+//   "Produksjonsskifte",
+//   "Flyttet",
+//   "Annet",
+// ] as const;
 
 export default function MoveBladeModal({
   open,
