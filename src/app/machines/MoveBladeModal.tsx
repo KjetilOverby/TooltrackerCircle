@@ -335,8 +335,7 @@ export default function MoveBladeModal({
             className="mbBtn primary"
             type="button"
             onClick={() => {
-              console.log("CLICK Flytt blad");
-              onMove();
+              void onMove();
             }}
           >
             {isSubmitting ? "Flytter…" : "Flytt blad"}
