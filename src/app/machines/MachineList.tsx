@@ -27,6 +27,7 @@ interface MachineListProps {
 
   // ✅ legg til denne:
   openChangeBladeModal: (saw: MachineListProps["saws"][number]) => void;
+  openMoveBladeModal: (saw: MachineListProps["saws"][number]) => void;
 }
 
 function formatDateTimeNo(d: Date) {
@@ -57,6 +58,7 @@ const MachineList: React.FC<MachineListProps> = ({
   openMountModal,
   openUninstallModal,
   openChangeBladeModal,
+  openMoveBladeModal,
 }) => {
   const now = new Date();
 
@@ -529,7 +531,10 @@ const MachineList: React.FC<MachineListProps> = ({
                     Bytt blad
                   </button>
 
-                  <button className="btn" disabled>
+                  <button
+                    onClick={() => openMoveBladeModal(saw)}
+                    className="btn"
+                  >
                     Flytt blad
                   </button>
                 </div>

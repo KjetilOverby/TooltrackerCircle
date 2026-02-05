@@ -43,6 +43,7 @@ export const settingsRouter = createTRPCRouter({
     
           installs: {
             where: { removedAt: null },
+            orderBy: { installedAt: "desc" }, // ✅
             take: 1,
             select: {
               id: true,
@@ -60,6 +61,7 @@ export const settingsRouter = createTRPCRouter({
         },
       });
     }),
+    
     
 
     

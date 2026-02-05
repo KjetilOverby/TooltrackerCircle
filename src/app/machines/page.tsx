@@ -7,6 +7,7 @@ import UninstallModal from "./UninstallModal";
 import InstallModal from "../create/InstallModal";
 import MachineList from "./MachineList";
 import ChangeBladeModal from "./ChangeBladeModal";
+import MoveBladeModal from "./MoveBladeModal";
 
 type SawForMachines = {
   id: string;
@@ -27,8 +28,9 @@ type Blade = {
 };
 
 export default function MaskinerPage() {
-  // ✅ Inkluder aktiv install + blad.IdNummer
   const sawsQuery = api.settings.saw.listForMachines.useQuery();
+  const utils = api.useUtils();
+
   const saws = (sawsQuery.data ?? []).map((s) => ({
     ...s,
     sawType: s.sawType ?? undefined,
@@ -107,19 +109,12 @@ export default function MaskinerPage() {
   const [changeSaw, setChangeSaw] = React.useState<SawForMachines | null>(null);
   const [newBladeId, setNewBladeId] = React.useState<string>("");
 
-  // Du kan bruke samme removedReason/removedNote her (det er jo årsak/notat for bladet som tas ut)
-  // Derfor resetter vi dem når vi åpner bytt-blad også.
-
-  // Hvis du vil ha egen søkestreng for bytt-blad, kan du lage changeSearch.
-  // Her holder vi det enkelt og henter “alle” med q:"" (tilpass på backend om nødvendig).
   const bladesForChangeQuery = api.sawBlade.list.useQuery(
     { q: bladeSearch },
     { enabled: changeOpen },
   );
   const bladeOptions = (bladesForChangeQuery.data ?? []) as Blade[];
 
-  // ⚠️ Denne forutsetter at du har laget en swap-mutation i tRPC:
-  // api.bladeInstall.swap.useMutation(...)
   const swapMutation = api.bladeInstall.swap.useMutation({
     onSuccess: () => {
       setChangeSaw(null);
@@ -142,14 +137,91 @@ export default function MaskinerPage() {
     void recentQuery.refetch();
   }
 
-  // Antar at installs[0] er den aktive installen (slik du skrev “ny query som inkluderer aktiv install”)
-  const currentBlade =
-    changeSaw?.installs?.[0]?.blade && changeSaw.installs[0].blade
-      ? {
-          id: changeSaw.installs[0].blade.id,
-          IdNummer: changeSaw.installs[0].blade.IdNummer,
-        }
-      : null;
+  const currentBlade = changeSaw?.installs?.[0]?.blade
+    ? {
+        id: changeSaw.installs[0].blade.id,
+        IdNummer: changeSaw.installs[0].blade.IdNummer,
+      }
+    : null;
+
+  // ============================================================
+  // ✅ NY: Flytt blad modal (Move)
+  // ============================================================
+  const [moveOpen, setMoveOpen] = React.useState(false);
+  const [moveBlade, setMoveBlade] = React.useState<Blade | null>(null);
+  const [moveFromSaw, setMoveFromSaw] = React.useState<SawForMachines | null>(
+    null,
+  );
+
+  const [moveSawSearch, setMoveSawSearch] = React.useState("");
+  const [moveToSawId, setMoveToSawId] = React.useState("");
+  const [moveReplaceReason, setMoveReplaceReason] = React.useState<string>("");
+  const [moveReplaceNote, setMoveReplaceNote] = React.useState<string>("");
+
+  // Hent aktivt blad i valgt målsag (kun når modal er åpen + toSaw valgt)
+  const moveDestQuery = api.bladeInstall.currentOnSaw.useQuery(
+    { sawId: moveToSawId },
+    { enabled: moveOpen && !!moveToSawId },
+  );
+
+  const destBladeIdNummer =
+    moveDestQuery.data?.current?.blade?.IdNummer ?? null;
+  const destHasBlade = !!destBladeIdNummer;
+
+  const moveMutation = api.bladeInstall.install.useMutation({
+    onSuccess: async () => {
+      console.log("Mutation success - starter invaliderting..."); // Flytt denne opp hit!
+
+      // Nullstill statene først
+      setMoveOpen(false);
+      setMoveBlade(null);
+      // ... resten av settene dine
+
+      // Vent på at invalidertingen er FERDIG før du går videre
+      try {
+        await utils.bladeInstall.currentOnSaw.invalidate();
+        await utils.bladeInstall.recent.invalidate();
+        await utils.settings.saw.listForMachines.invalidate();
+
+        console.log("Alt er markert som stale");
+
+        // I stedet for refetch(), prøv å invalidate selve hoved-queryen til saws
+        await utils.bladeInstall.invalidate(); // Invaliderer alt under dette navnerommet
+      } catch (e) {
+        console.error("Feil under invaliderting:", e);
+      }
+    },
+  });
+
+  function openMoveBladeModal(saw: SawForMachines) {
+    const b = saw.installs?.[0]?.blade ?? null;
+
+    if (!b?.id) {
+      console.warn("openMoveBladeModal: ingen aktivt blad på sagen", saw);
+      return;
+    }
+
+    setMoveFromSaw(saw);
+    setMoveBlade({ id: b.id, IdNummer: b.IdNummer }); // ✅ viktig: id må med
+
+    setMoveSawSearch("");
+    setMoveToSawId("");
+    setMoveReplaceReason("");
+    setMoveReplaceNote("");
+    setMoveOpen(true);
+  }
+
+  async function submitMove() {
+    if (!moveBlade?.id) return;
+    if (!moveToSawId) return;
+
+    await moveMutation.mutateAsync({
+      sawId: moveToSawId,
+      bladeId: moveBlade.id,
+      replaceReason: destHasBlade ? moveReplaceReason || undefined : undefined,
+      replaceNote: destHasBlade ? moveReplaceNote || undefined : undefined,
+    });
+  }
 
   return (
     <div className="page">
@@ -164,7 +236,9 @@ export default function MaskinerPage() {
           saws={saws}
           openMountModal={openMountModal}
           openUninstallModal={openUninstallModal}
-          openChangeBladeModal={openChangeBladeModal} // ✅ ny
+          openChangeBladeModal={openChangeBladeModal}
+          // ✅ NY: du må koble denne i MachineList (knapp “Flytt”)
+          openMoveBladeModal={openMoveBladeModal}
         />
 
         {/* Monter */}
@@ -199,7 +273,7 @@ export default function MaskinerPage() {
           isFetching={recentQuery.isFetching}
         />
 
-        {/* Bytt blad (uninstall + install i én modal) */}
+        {/* Bytt blad */}
         <ChangeBladeModal
           bladeSearch={bladeSearch}
           setBladeSearch={setBladeSearch}
@@ -220,6 +294,33 @@ export default function MaskinerPage() {
           removedNote={removedNote}
           setRemovedNote={setRemovedNote}
           swapMutation={swapMutation}
+        />
+
+        <MoveBladeModal
+          open={moveOpen}
+          setOpen={setMoveOpen}
+          blade={
+            moveBlade
+              ? { id: moveBlade.id, IdNummer: moveBlade.IdNummer }
+              : null
+          }
+          fromSaw={
+            moveFromSaw ? { id: moveFromSaw.id, name: moveFromSaw.name } : null
+          }
+          saws={saws.map((s) => ({ id: s.id, name: s.name }))}
+          sawSearch={moveSawSearch}
+          setSawSearch={setMoveSawSearch}
+          toSawId={moveToSawId}
+          setToSawId={setMoveToSawId}
+          destIsLoading={moveDestQuery.isLoading}
+          destBladeIdNummer={destBladeIdNummer}
+          replaceReason={moveReplaceReason}
+          setReplaceReason={setMoveReplaceReason}
+          replaceNote={moveReplaceNote}
+          setReplaceNote={setMoveReplaceNote}
+          isSubmitting={moveMutation.isPending}
+          errorMessage={moveMutation.error?.message ?? null}
+          onSubmit={submitMove}
         />
       </div>
 

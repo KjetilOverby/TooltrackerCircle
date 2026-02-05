@@ -433,5 +433,25 @@ if (!orgId) {
     });
   }),
 
+
+  currentOnSaw: protectedProcedure
+  .input(z.object({ sawId: z.string().min(1) }))
+  .query(async ({ ctx, input }) => {
+    const orgId = ctx.auth.orgId;
+    if (!orgId) throw new TRPCError({ code: "UNAUTHORIZED", message: "Mangler org" });
+
+    const current = await ctx.db.bladeInstall.findFirst({
+      where: { orgId, sawId: input.sawId, removedAt: null },
+      select: {
+        id: true,
+        blade: { select: { id: true, IdNummer: true } },
+      },
+    });
+
+    return { current };
+  }),
+
+
+
   
 });
