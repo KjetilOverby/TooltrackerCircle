@@ -303,7 +303,7 @@ const SwapBladeModal: React.FC<SwapBladeModalProps> = ({
           color:#0f172a;
           min-height: 46px;
         }
-        .sbBtn:hover{ background: rgba(255,255,255,.98); }
+        .sbBtn:hover{ background: rgba(29,78,216,.95); }
         .sbPrimary{
           border:1px solid rgba(37,99,235,.35);
           background: linear-gradient(180deg, rgba(37,99,235,.95), rgba(29,78,216,.95));

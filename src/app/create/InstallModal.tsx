@@ -50,6 +50,7 @@ const InstallModal: React.FC<InstallModalProps> = ({
           align-items: center;
           justify-content: center;
           padding: 18px;
+          z-index: 1000;
         }
         .modal {
           width: min(760px, 100%);

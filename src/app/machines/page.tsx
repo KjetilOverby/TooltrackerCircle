@@ -227,7 +227,6 @@ export default function MaskinerPage() {
     <div className="page">
       <div className="container">
         <h1>Maskiner</h1>
-        <p className="subtitle">Klikk Monter for å velge blad fra databasen.</p>
 
         {sawsQuery.isLoading && <p>Laster…</p>}
         {sawsQuery.isError && <p>Feil: {sawsQuery.error.message}</p>}
