@@ -1,6 +1,8 @@
-// app/hjem/page.tsx
+"use client";
 import Link from "next/link";
 import React from "react";
+import { api } from "~/trpc/react";
+import ActiveMachines from "./ActiveMachines";
 
 type EventKind =
   | "INSTALL"
@@ -17,7 +19,26 @@ type EventItem = {
   time: string;
 };
 
+type SawForMachines = {
+  id: string;
+  name: string;
+  sawType?: string | null;
+  active?: boolean;
+  installs?: Array<{
+    id: string;
+    installedAt: Date;
+    blade: { id: string; IdNummer: string } | null;
+  }>;
+};
+
 export default function HjemPage() {
+  const sawsQuery = api.settings.saw.listForMachines.useQuery();
+  const utils = api.useUtils();
+
+  const saws = (sawsQuery.data ?? []).map((s) => ({
+    ...s,
+    sawType: s.sawType ?? undefined,
+  })) as SawForMachines[];
   // TODO: erstatt med ekte data senere
   const kpis = [
     { label: "Maskiner i drift", value: "6", hint: "nå" },
@@ -26,27 +47,34 @@ export default function HjemPage() {
     { label: "Åpne hendelser", value: "4", hint: "siste 24t" },
   ];
 
-  const machinesNow = [
-    {
-      name: "Kappsag 1",
-      blade: "B-1048",
-      since: "2 t 14 min",
-      state: "ok" as const,
-    },
-    {
-      name: "Kappsag 2",
-      blade: "B-0981",
-      since: "1 d 3 t",
-      state: "ok" as const,
-    },
-    { name: "Båndsag 1", blade: "—", since: "—", state: "idle" as const },
-    {
-      name: "Båndsag 2",
-      blade: "B-1102",
-      since: "38 min",
-      state: "ok" as const,
-    },
-  ];
+  function timeAgoFrom(date: Date, now = new Date()) {
+    const diffMs = now.getTime() - date.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+
+    if (diffMin < 60) return `${diffMin} min`;
+    const diffHours = Math.floor(diffMin / 60);
+    if (diffHours < 24) return `${diffHours} t`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays} d`;
+  }
+
+  const now = new Date();
+
+  const machinesNow = saws.map((saw) => {
+    const activeInstall = saw.installs?.[0] ?? null;
+    const bladeId = activeInstall?.blade?.IdNummer ?? "—";
+
+    const since = activeInstall?.installedAt
+      ? timeAgoFrom(new Date(activeInstall.installedAt), now)
+      : "—";
+
+    return {
+      name: saw.name,
+      blade: bladeId,
+      since,
+      state: activeInstall ? ("ok" as const) : ("idle" as const),
+    };
+  });
 
   const events: EventItem[] = [
     {
@@ -125,14 +153,6 @@ export default function HjemPage() {
                 Legg til sagblad
               </Link>
             </div>
-
-            <div className="softNote">
-              <span className="softDot" />
-              <span>
-                Tips: Bruk “Monter / demonter” i drift — og fyll inn detaljer
-                senere via etterregistrering.
-              </span>
-            </div>
           </div>
 
           {/* KPI card */}
@@ -169,153 +189,12 @@ export default function HjemPage() {
           </div>
         </section>
 
-        {/* GRID */}
         <section className="grid">
-          {/* Maskiner */}
-          <div className="panel">
-            <div className="panelHeader">
-              <div>
-                <div className="panelTitle">Maskiner akkurat nå</div>
-                <div className="panelSub">Kjapp oversikt over drift</div>
-              </div>
-              <Link className="panelLink" href="/machines">
-                Se alle →
-              </Link>
-            </div>
-
-            <div className="list">
-              {machinesNow.map((m) => (
-                <div key={m.name} className="row">
-                  <div className="rowLeft">
-                    <span className={`lamp ${m.state === "ok" ? "on" : ""}`} />
-                    <div className="rowMain">
-                      <div className="rowTitle">{m.name}</div>
-                      <div className="rowMeta">
-                        Montert blad: <b>{m.blade}</b>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rowRight">
-                    <div className="rowState">
-                      {m.state === "idle" ? "Tom" : "I drift"}
-                    </div>
-                    <div className="rowTime">{m.since}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="panelFooter">
-              <Link className="btn btnSoft" href="/machines">
-                Gå til maskiner
-              </Link>
-              <Link className="btn btnSoft" href="/drift/historikk">
-                Driftshistorikk
-              </Link>
-            </div>
-          </div>
-
-          {/* Hendelser */}
-          <div className="panel">
-            <div className="panelHeader">
-              <div>
-                <div className="panelTitle">Siste hendelser</div>
-                <div className="panelSub">
-                  Blad til omlodding, montering, demontering, osv.
-                </div>
-              </div>
-              <Link className="panelLink" href="/drift/historikk">
-                Historikk →
-              </Link>
-            </div>
-
-            <div className="feed">
-              {events.map((e, idx) => (
-                <div key={idx} className="event">
-                  <span className={`badge ${e.kind}`}>{kindLabel[e.kind]}</span>
-
-                  <div className="eventText">
-                    <div className="eventTitle">{e.title}</div>
-                    <div className="eventMeta">{e.meta}</div>
-                  </div>
-
-                  <div className="eventTime">{e.time}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="panelFooter">
-              <Link className="btn btnSoft" href="/drift/etterregistrering">
-                Etterregistrer
-              </Link>
-              <Link className="btn btnSoft" href="/service/hendelser">
-                Servicehendelser
-              </Link>
-            </div>
-          </div>
-
-          {/* Tiles */}
-          <div className="panel wide">
-            <div className="panelHeader">
-              <div>
-                <div className="panelTitle">Snarveier</div>
-                <div className="panelSub">
-                  Hold det enkelt – klikk deg rett inn
-                </div>
-              </div>
-            </div>
-
-            <div className="tiles">
-              <Link className="tile" href="/machines">
-                <div className="tileTop">
-                  <span className="tileIcon" aria-hidden>
-                    ⚙️
-                  </span>
-                  <span className="tilePill">Drift</span>
-                </div>
-                <div className="tileTitle">Monter / demonter</div>
-                <div className="tileSub">Rask registrering i drift</div>
-                <div className="tileArrow">→</div>
-              </Link>
-
-              <Link className="tile" href="/drift/etterregistrering">
-                <div className="tileTop">
-                  <span className="tileIcon" aria-hidden>
-                    📝
-                  </span>
-                  <span className="tilePill">Kontor</span>
-                </div>
-                <div className="tileTitle">Etterregistrering</div>
-                <div className="tileSub">Fyll inn i ro og mak</div>
-                <div className="tileArrow">→</div>
-              </Link>
-
-              <Link className="tile" href="/service">
-                <div className="tileTop">
-                  <span className="tileIcon" aria-hidden>
-                    🛠️
-                  </span>
-                  <span className="tilePill">Service</span>
-                </div>
-                <div className="tileTitle">Serviceoversikt</div>
-                <div className="tileSub">Planlagt og historikk</div>
-                <div className="tileArrow">→</div>
-              </Link>
-
-              <Link className="tile" href="/create">
-                <div className="tileTop">
-                  <span className="tileIcon" aria-hidden>
-                    ➕
-                  </span>
-                  <span className="tilePill">Data</span>
-                </div>
-                <div className="tileTitle">Legg til sagblad</div>
-                <div className="tileSub">Registrer nye blad</div>
-                <div className="tileArrow">→</div>
-              </Link>
-            </div>
-          </div>
+          <ActiveMachines
+            machinesNow={machinesNow}
+            events={events}
+            kindLabel={kindLabel}
+          />
         </section>
       </div>
 
@@ -581,7 +460,7 @@ export default function HjemPage() {
 
         .grid{
           display:grid;
-          grid-template-columns: repeat(12, minmax(0, 1fr));
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 16px;
         }
 
