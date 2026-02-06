@@ -265,7 +265,7 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
               <div className="clerkSkeleton" />
             </ClerkLoading>
             <ClerkLoaded>
-              <OrganizationSwitcher afterSelectOrganizationUrl="/startside" />
+              <OrganizationSwitcher />
             </ClerkLoaded>
           </>
         ) : null}

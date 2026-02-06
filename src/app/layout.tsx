@@ -7,6 +7,7 @@ import { TRPCReactProvider } from "~/trpc/react";
 
 import HeaderComponent from "./_components/layout/HeaderComponent";
 import OrgGate from "./_components/orgGate";
+import { OrgChangeListener } from "./_components/OrgWatcher";
 
 export const metadata: Metadata = {
   title: "Tooltracker",
@@ -30,6 +31,7 @@ export default function RootLayout({
           <TRPCReactProvider>
             {/* 1) Låser signed-in uten org -> /select-org */}
             <OrgGate />
+            <OrgChangeListener />
 
             {/* 2) Låser signed-out visuelt (dekker ALT) */}
 
