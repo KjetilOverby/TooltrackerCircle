@@ -190,9 +190,34 @@ if (!orgId) {
         },
         orderBy: { removedAt: "desc" },
         take: input.take,
-        include: {
-          blade: true,
-          saw: true,         
+        select: {
+          id: true,
+          installedAt: true,
+          removedAt: true,
+          removedReason: true,
+          removedNote: true,
+      
+          blade: {
+            select: {
+              id: true,
+              IdNummer: true,
+              side: true,
+              bladeType: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+      
+          saw: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+      
           _count: {
             select: { runLogs: true },
           },

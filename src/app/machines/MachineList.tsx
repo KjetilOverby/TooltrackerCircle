@@ -268,6 +268,7 @@ const MachineList: React.FC<MachineListProps> = ({
             ? new Date(activeInstall.installedAt)
             : null;
           const sinceText = installedAt ? timeAgoFrom(installedAt, now) : null;
+          console.log(activeInstall);
 
           return (
             <div key={saw.id} className="card">
@@ -308,14 +309,28 @@ const MachineList: React.FC<MachineListProps> = ({
                     <div className="bladeValue">
                       {hasBlade ? (
                         <>
-                          {bladeId}
-                          <span className="bladeExtra">
-                            {" "}
-                            • {sinceText} siden
-                          </span>
+                          ID: {bladeId}
                           <p className="bladeTypeText">
                             {bladeType} {bladeSide && bladeSide}
                           </p>
+                          {installedAt ? (
+                            <div className="bladeExtra text-sm leading-tight">
+                              <div>
+                                {installedAt.toLocaleString("nb-NO", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </div>
+                              <div className="text-muted-foreground">
+                                {sinceText} siden
+                              </div>
+                            </div>
+                          ) : (
+                            "—"
+                          )}
                         </>
                       ) : (
                         "Ingen aktive blad"

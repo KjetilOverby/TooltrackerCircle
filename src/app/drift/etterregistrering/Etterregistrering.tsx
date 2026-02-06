@@ -12,7 +12,12 @@ function formatDuration(ms: number) {
 export type UnmountRow = {
   id: string;
   saw: { name: string };
-  blade: { IdNummer: string };
+
+  blade: {
+    IdNummer: string;
+    bladeType?: { name: string };
+    side: string | null; // ENDRET HER: Tillater null
+  };
   installedAt: Date;
   removedAt: Date | null;
   removedReason: string | null;
@@ -35,7 +40,7 @@ const EtterregistreringList = <T extends UnmountRow>({
 
   return (
     <section className="et-card">
-      <style>{`
+      <style jsx>{`
         .et-card {
           background: rgba(30, 41, 59, 0.7);
           backdrop-filter: blur(12px);
@@ -90,14 +95,64 @@ const EtterregistreringList = <T extends UnmountRow>({
         }
 
         @keyframes et-pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(1.2); }
+          0%,
+          100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.5;
+            transform: scale(1.2);
+          }
         }
 
-        .et-list {
+        /* Ny layout for info-linjen */
+        .et-info-line {
           display: flex;
+          gap: 8px;
+          margin-bottom: 8px;
           flex-direction: column;
-          gap: 12px;
+          justify-content: flex-start;
+          align-items: flex-start;
+        }
+
+        .et-main-id {
+          font-size: 15px;
+          font-weight: 600;
+          color: #9dc9f5;
+          background: rgba(59, 130, 246, 0.1);
+          padding: 4px 10px;
+          border-radius: 8px;
+          border: 1px solid rgba(59, 130, 246, 0.2);
+          min-width: 70px;
+          text-align: center;
+          gap: 4px;
+        }
+
+        .et-type-tag {
+          font-size: 15px;
+          font-weight: 400;
+          color: #9dc9f5;
+          background: rgba(59, 130, 246, 0.1);
+          padding: 4px 10px;
+          border-radius: 8px;
+          border: 1px solid rgba(59, 130, 246, 0.2);
+          min-width: 70px;
+          text-align: center;
+          gap: 4px;
+        }
+
+        .et-saw-tag {
+          font-size: 15px;
+          font-weight: 600;
+          color: #9dc9f5;
+          background: rgba(59, 130, 246, 0.1);
+          padding: 4px 10px;
+          border-radius: 8px;
+          border: 1px solid rgba(59, 130, 246, 0.2);
+          min-width: 70px;
+          text-align: center;
+          gap: 4px;
         }
 
         .et-row {
@@ -109,6 +164,7 @@ const EtterregistreringList = <T extends UnmountRow>({
           flex-direction: column;
           gap: 16px;
           transition: all 0.2s ease;
+          margin-bottom: 12px;
         }
 
         .et-row:hover {
@@ -116,45 +172,48 @@ const EtterregistreringList = <T extends UnmountRow>({
           border-color: rgba(59, 130, 246, 0.3);
         }
 
-        .et-main {
-          flex: 1;
-        }
-
-        .et-headline {
-          font-size: 15px;
-          font-weight: 600;
-          margin-bottom: 8px;
-        }
-        .et-headline b {
-          color: #3b82f6;
-          font-weight: 800;
-        }
-
         .et-pills {
           display: flex;
           flex-wrap: wrap;
-          gap: 8px;
-          margin-bottom: 12px;
+          gap: 6px;
+          margin-bottom: 8px;
         }
 
         .et-pill {
-          padding: 4px 10px;
-          border-radius: 8px;
-          font-size: 11px;
+          padding: 3px 8px;
+          border-radius: 6px;
+          font-size: 10px;
           font-weight: 700;
           text-transform: uppercase;
           border: 1px solid transparent;
         }
 
-        .et-pill-reason { background: rgba(255,255,255,0.05); color: #cbd5e1; border-color: rgba(255,255,255,0.1); }
-        .et-pill-warn { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: rgba(245, 158, 11, 0.2); }
-        .et-pill-ok { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.2); }
-        .et-pill-time { background: rgba(59, 130, 246, 0.1); color: #60a5fa; border-color: rgba(59, 130, 246, 0.2); }
+        .et-pill-reason {
+          background: rgba(255, 255, 255, 0.05);
+          color: #cbd5e1;
+          border-color: rgba(255, 255, 255, 0.1);
+        }
+        .et-pill-warn {
+          background: rgba(245, 158, 11, 0.1);
+          color: #f59e0b;
+          border-color: rgba(245, 158, 11, 0.2);
+        }
+        .et-pill-ok {
+          background: rgba(16, 185, 129, 0.1);
+          color: #10b981;
+          border-color: rgba(16, 185, 129, 0.2);
+        }
+        .et-pill-time {
+          background: rgba(59, 130, 246, 0.1);
+          color: #60a5fa;
+          border-color: rgba(59, 130, 246, 0.2);
+        }
 
         .et-meta {
           font-size: 12px;
-          color: #64748b;
+          color: #9dc9f5;
           display: flex;
+          align-items: center;
           gap: 8px;
         }
 
@@ -165,14 +224,14 @@ const EtterregistreringList = <T extends UnmountRow>({
         }
 
         .et-btn {
-          padding: 10px 16px;
-          border-radius: 12px;
+          padding: 8px 14px;
+          border-radius: 10px;
           font-size: 13px;
           font-weight: 700;
           cursor: pointer;
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 6px;
           transition: 0.2s;
           border: 1px solid transparent;
         }
@@ -183,27 +242,32 @@ const EtterregistreringList = <T extends UnmountRow>({
         }
         .et-btn-primary:hover:not(:disabled) {
           background: #2563eb;
-          box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
+          transform: translateY(-1px);
         }
-
         .et-btn-ghost {
-          background: rgba(255,255,255,0.05);
+          background: rgba(255, 255, 255, 0.05);
           color: #94a3b8;
-          border-color: rgba(255,255,255,0.1);
+          border-color: rgba(255, 255, 255, 0.1);
         }
-        .et-btn-ghost:hover:not(:disabled) {
-          background: rgba(255,255,255,0.1);
+        .et-btn-ghost:hover {
           color: #fff;
+          background: rgba(255, 255, 255, 0.1);
         }
 
         .et-btn:disabled {
-          opacity: 0.2;
+          opacity: 0.25;
           cursor: not-allowed;
         }
 
         @media (min-width: 780px) {
-          .et-row { flex-direction: row; align-items: center; }
-          .et-actions { min-width: 320px; }
+          .et-row {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+          }
+          .et-actions {
+            min-width: 280px;
+          }
         }
       `}</style>
 
@@ -211,7 +275,7 @@ const EtterregistreringList = <T extends UnmountRow>({
         <div className="et-title-wrap">
           <div className="et-title">Etterregistrering</div>
           <div className="et-subtitle">
-            Viktig: Manglende driftsdata bør legges inn fortløpende.
+            Mangler driftsdata bør legges inn fortløpende.
           </div>
         </div>
 
@@ -233,8 +297,22 @@ const EtterregistreringList = <T extends UnmountRow>({
           return (
             <div key={row.id} className="et-row">
               <div className="et-main">
-                <div className="et-headline">
-                  Blad <b>{row.blade.IdNummer}</b> på <b>{row.saw.name}</b>
+                <div className="et-info-line">
+                  <div className="et-main-id">
+                    <span style={{ fontSize: "9px", opacity: 0.6 }}>ID: </span>
+                    {row.blade.IdNummer}
+                  </div>
+                  <div className="et-type-tag">
+                    <span style={{ fontSize: "9px", opacity: 0.6 }}>
+                      TYPE:{" "}
+                    </span>
+                    {row.blade.bladeType?.name ?? "Standard blad"}{" "}
+                    {row.blade.side}
+                  </div>
+                  <div className="et-saw-tag">
+                    <span style={{ fontSize: "9px", opacity: 0.6 }}>SAG:</span>
+                    {row.saw.name}
+                  </div>
                 </div>
 
                 <div className="et-pills">
@@ -244,6 +322,9 @@ const EtterregistreringList = <T extends UnmountRow>({
                     </span>
                   )}
 
+                  {duration && (
+                    <span className="et-pill et-pill-time">⏱ {duration}</span>
+                  )}
                   <span
                     className={`et-pill ${manglerDriftsdata ? "et-pill-warn" : "et-pill-ok"}`}
                   >
@@ -251,18 +332,16 @@ const EtterregistreringList = <T extends UnmountRow>({
                       ? "⚠️ Mangler driftsdata"
                       : "✅ Driftsdata OK"}
                   </span>
-
-                  {duration && (
-                    <span className="et-pill et-pill-time">⏱ {duration}</span>
-                  )}
                 </div>
 
                 <div className="et-meta">
                   <span>{row.installedAt.toLocaleDateString("nb-NO")}</span>
                   <span>→</span>
-                  <span>{row.removedAt?.toLocaleDateString("nb-NO")}</span>
+                  <span>
+                    {row.removedAt?.toLocaleDateString("nb-NO") ?? "Nå"}
+                  </span>
                   {row.removedNote && (
-                    <span style={{ fontStyle: "italic" }}>
+                    <span style={{ fontStyle: "italic", opacity: 0.7 }}>
                       · {row.removedNote}
                     </span>
                   )}
@@ -279,8 +358,8 @@ const EtterregistreringList = <T extends UnmountRow>({
                   }}
                 >
                   <svg
-                    width="16"
-                    height="16"
+                    width="14"
+                    height="14"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -288,7 +367,7 @@ const EtterregistreringList = <T extends UnmountRow>({
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth="2"
+                      strokeWidth="2.5"
                       d="M12 4v16m8-8H4"
                     />
                   </svg>
@@ -300,8 +379,8 @@ const EtterregistreringList = <T extends UnmountRow>({
                   onClick={() => console.log("Rediger", row.id)}
                 >
                   <svg
-                    width="16"
-                    height="16"
+                    width="14"
+                    height="14"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"

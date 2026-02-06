@@ -1,4 +1,5 @@
  const changeReasons = [
+  "Rutine",
   "Sagbladet går bra",
   "Sløvt",
   "Merker etter sagblad på skuroverflaten",
@@ -11,6 +12,8 @@
   "Sagbladet gått i metall/stein",
   "Tannbrudd",
   "Tannslipp",
+  "Havari",
+  "Kassert hos kunde",
   "Annet"
 ];
 
