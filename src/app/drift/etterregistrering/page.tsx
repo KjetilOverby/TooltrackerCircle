@@ -122,6 +122,10 @@ const Page = () => {
               temperatur: input.temperatur ?? null,
               ampere: input.ampere ?? null,
               stokkAnt: input.stokkAnt ?? null,
+              sideklaring: input.sideklaring ?? null,
+              feilkode: input.feilkode ?? null,
+              alt: input.alt ?? null,
+              loggedAt: input.loggedAt, // Viktig hvis du vil lagre tidspunktet fra modalen
             });
             await recentQuery.refetch();
             setRunLogOpen(false);

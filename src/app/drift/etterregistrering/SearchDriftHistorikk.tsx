@@ -50,7 +50,7 @@ const UnmountLookupCard: React.FC<UnmountLookupCardProps> = ({
 }) => {
   return (
     <section className="wrap">
-      <style jsx>{`
+      <style>{`
         .wrap {
           background: #fff;
           border: 1px solid #e6e7ea;

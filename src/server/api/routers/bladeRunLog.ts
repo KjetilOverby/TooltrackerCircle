@@ -38,10 +38,14 @@ export const bladeRunLogRouter = createTRPCRouter({
   .input(
     z.object({
       installId: z.string(),
-      sagtid: z.number().nullable(),
-      temperatur: z.number().nullable(),
-      stokkAnt: z.number().nullable(),
-      ampere: z.number().nullable(),
+      loggedAt: z.date().optional(),
+      sagtid: z.number().nullable().optional(),
+      temperatur: z.number().nullable().optional(),
+      sideklaring: z.number().nullable().optional(), // Den du sa fungerte
+      ampere: z.number().nullable().optional(),
+      stokkAnt: z.number().nullable().optional(),
+      feilkode: z.string().nullable().optional(), // MÅ MED HER
+      alt: z.string().nullable().optional(),      // MÅ MED HER
     }),
   )
   .mutation(async ({ ctx, input }) => {

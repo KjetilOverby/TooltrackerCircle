@@ -173,7 +173,7 @@ export default function BladeRunLogModal({
       ...(sideNum !== null ? { sideklaring: sideNum } : {}),
       ...(ampNum !== null ? { ampere: ampNum } : {}),
       ...(stokkInt !== null ? { stokkAnt: stokkInt } : {}),
-      ...(alt.trim() ? { alt: alt.trim() } : {}),
+      alt: alt.trim(),
     };
 
     await onSave(input);
