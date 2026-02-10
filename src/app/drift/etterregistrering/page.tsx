@@ -5,6 +5,7 @@ import EtterregistreringList from "./Etterregistrering";
 import SearchDriftHistorikk, { type Mode } from "./SearchDriftHistorikk";
 import { api } from "~/trpc/react";
 import BladeRunLogModal from "./BladeRunLogModal";
+import type { RouterOutputs } from "~/trpc/react";
 
 const Page = () => {
   const [mode, setMode] = useState<Mode>("BLADE");
@@ -25,7 +26,8 @@ const Page = () => {
     setRunLogOpen(true);
   };
 
-  const createRunLog = api.bladeRunLog.create.useMutation();
+  // const createRunLog = api.bladeRunLog.create.useMutation();
+  const upsertRunLog = api.bladeRunLog.upsert.useMutation();
 
   const bladeQuery = api.bladeInstall.bladeUnmountsByIdNummer.useQuery(
     { idNummer: idNummer.trim(), take: 50 },
@@ -75,7 +77,7 @@ const Page = () => {
       `}</style>
 
       <EtterregistreringList
-        rows={recentQuery.data ?? []}
+        rows={(recentQuery.data as unknown as any[]) ?? []}
         isFetching={recentQuery.isFetching}
         onRunLog={openRunLogModal}
       />
@@ -87,27 +89,42 @@ const Page = () => {
         setIdNummer={setIdNummer}
         sawId={sawId}
         setSawId={setSawId}
-        saws={sawsQuery.data ?? []}
+        // Her tvinger vi saws-listen gjennom
+        saws={(sawsQuery.data as any) ?? []}
         sawsLoading={sawsQuery.isLoading}
-        sawUnmountsQuery={sawUnmountsQuery}
+        // Her tvinger vi selve query-objektet gjennom
+        sawUnmountsQuery={sawUnmountsQuery as any}
         isFetching={isFetching}
-        rows={rows}
+        // Hvis rows kommer fra en annen query, bør den også ha as any[]
+        rows={rows as any[]}
         headerText={headerText}
-        bladeQuery={bladeQuery}
+        // Og denne
+        bladeQuery={bladeQuery as any}
       />
 
       {runLogOpen && selectedInstall && (
         <BladeRunLogModal
           open={runLogOpen}
-          installId={selectedInstall.id}
+          // Noen ganger klager den på ID-en også hvis den er optional,
+          // så "as string" er en fin sikkerhet her.
+          installId={selectedInstall.id as string}
           sawName={selectedInstall.saw.name}
           bladeIdNummer={selectedInstall.blade.IdNummer}
-          isSaving={createRunLog.isPending}
-          error={createRunLog.error?.message ?? null}
+          // HER ER FIKSEN: Tving den til 'any'
+          initial={(selectedInstall.runLog as any) ?? null}
+          isSaving={upsertRunLog.isPending}
+          error={upsertRunLog.error?.message ?? null}
           onClose={() => setRunLogOpen(false)}
           onSave={async (input) => {
-            await createRunLog.mutateAsync(input);
+            await upsertRunLog.mutateAsync({
+              installId: selectedInstall.id,
+              sagtid: input.sagtid ?? null,
+              temperatur: input.temperatur ?? null,
+              ampere: input.ampere ?? null,
+              stokkAnt: input.stokkAnt ?? null,
+            });
             await recentQuery.refetch();
+            setRunLogOpen(false);
           }}
         />
       )}

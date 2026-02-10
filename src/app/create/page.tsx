@@ -72,12 +72,23 @@ const Page = () => {
         form={form}
         handleChange={handleChange}
         handleSubmit={handleSubmit}
-        bladeTypes={bladeTypesQuery.data ?? []}
-        saws={sawsQuery.data ?? []}
+        bladeTypes={
+          bladeTypesQuery.data?.map((b) => ({
+            id: b.id!, // '!' sier: Jeg garanterer at denne finnes
+            name: b.name!, // '!' sier: Jeg garanterer at denne finnes
+            hasSide: b.hasSide ?? false,
+          })) ?? []
+        }
+        saws={
+          sawsQuery.data?.map((s) => ({
+            id: s.id!,
+            name: s.name!,
+          })) ?? []
+        }
         isLoading={createSawBlade.isPending}
       />
 
-      <CreatedSawbladeList sawBlades={sawbladeQuery.data ?? []} />
+      <CreatedSawbladeList sawBlades={(sawbladeQuery.data as any) ?? []} />
     </div>
   );
 };

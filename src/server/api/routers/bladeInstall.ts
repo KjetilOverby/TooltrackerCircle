@@ -207,7 +207,10 @@ if (!orgId) {
                   id: true,
                   name: true,
                 },
+                
               },
+            
+              
             },
           },
       
@@ -217,10 +220,23 @@ if (!orgId) {
               name: true,
             },
           },
-      
-          _count: {
-            select: { runLogs: true },
+          runLog: {
+                select: {
+                  id: true,
+                  loggedAt: true,
+                  sagtid: true,
+                  temperatur: true,
+                  sideklaring: true,
+                  feilkode: true,  
+                  ampere: true,
+                  stokkAnt: true,
+                  createdAt: true,
+                  updatedAt: true,
+                  alt: true,   
+                }
           },
+      
+       
         },
       });
       
@@ -281,9 +297,7 @@ if (!orgId) {
         include: {
           blade: true,
           saw: true,
-          _count: {
-            select: { runLogs: true },
-          },
+         
         },
       });
   
@@ -328,9 +342,7 @@ if (!orgId) {
         include: {
           blade: true,
           saw: true,
-          _count: {
-            select: { runLogs: true },
-          },
+        
         },
       });
     }),

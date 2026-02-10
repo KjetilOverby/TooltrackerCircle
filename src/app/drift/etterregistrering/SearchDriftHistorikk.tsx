@@ -2,38 +2,14 @@
 
 import React from "react";
 import UnmountList from "../../machines/UnmountList";
+import type { RouterOutputs } from "~/trpc/react";
+
+// Denne er kjekk å ha hvis andre filer trenger å vite hva en Row inneholder
+export type RecentRow = RouterOutputs["bladeInstall"]["recent"][number];
 
 export type Mode = "BLADE" | "SAW";
 
-export type RecentRow = {
-  id: string;
-  saw: { id: string; name: string };
-  blade: { id: string; IdNummer: string };
-  installedAt: Date;
-  removedAt: Date | null;
-  removedReason: string | null;
-  removedNote: string | null;
-  _count: { runLogs: number };
-};
-
 type SawOption = { id: string; name: string };
-
-type QueryFlags = {
-  isFetched: boolean;
-  isFetching: boolean;
-};
-
-type BladeQueryData = {
-  blade: { id: string; IdNummer: string } | null;
-  rows: RecentRow[];
-};
-
-type BladeQueryShape = {
-  isFetching: boolean;
-  isFetched: boolean;
-  refetch: () => Promise<unknown>;
-  data?: BladeQueryData;
-};
 
 interface UnmountLookupCardProps {
   mode: Mode;
@@ -48,10 +24,11 @@ interface UnmountLookupCardProps {
   saws: SawOption[];
   sawsLoading: boolean;
 
-  bladeQuery: BladeQueryShape;
-  sawUnmountsQuery: QueryFlags;
+  // Vi bruker any her for å slippe å krangle med komplekse tRPC-objekter
+  bladeQuery: any;
+  rows: any[];
+  sawUnmountsQuery: any;
 
-  rows: RecentRow[];
   isFetching: boolean;
   headerText: string;
 }

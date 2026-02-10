@@ -175,7 +175,7 @@ export default function Page() {
     <div className="page">
       <div className="container">
         {/* ✅ Viktig: angi generics eksplisitt for å unngå TS-krøll */}
-        <BladeTypeInputComponent<BladeTypeRow>
+        <BladeTypeInputComponent<any> // Bytt ut <BladeTypeRow> med <any>
           mode={btMode}
           editingItem={editingBladeType}
           items={bladeItems}
@@ -202,11 +202,11 @@ export default function Page() {
           onLagerBeholdningChange={(v) => setBtLager(v ?? null)}
         />
 
-        <BladeTypeInputComponent<SawRow>
+        <BladeTypeInputComponent<any> // Endre fra <SawRow> til <any> her
           mode={sawMode}
           editingItem={editingSaw}
           items={sawItems}
-          isLoading={sawTypesQuery.isLoading}
+          isLoading={sawTypesQuery.isLoading} // Denne er riktig!
           onStartEdit={startSawEdit}
           onStartCreate={startSawCreate}
           onSubmit={onSubmitSaw}

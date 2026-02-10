@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import type { RouterOutputs } from "~/trpc/react";
 
 // Definerer sag-typen for å bli kvitt 'any'
 interface Saw {

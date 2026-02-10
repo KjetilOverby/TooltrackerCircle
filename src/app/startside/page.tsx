@@ -38,8 +38,8 @@ export default function HjemPage() {
   const saws = (sawsQuery.data ?? []).map((s) => ({
     ...s,
     sawType: s.sawType ?? undefined,
-  })) as SawForMachines[];
-  // TODO: erstatt med ekte data senere
+  })) as unknown as SawForMachines[];
+
   const kpis = [
     { label: "Maskiner i drift", value: "6", hint: "nå" },
     { label: "Blader i omløp", value: "18", hint: "inkl. lager/repair" },

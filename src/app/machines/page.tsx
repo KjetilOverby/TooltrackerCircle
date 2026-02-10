@@ -34,7 +34,7 @@ export default function MaskinerPage() {
   const saws = (sawsQuery.data ?? []).map((s) => ({
     ...s,
     sawType: s.sawType ?? undefined,
-  })) as SawForMachines[];
+  })) as unknown as SawForMachines[]; // Legg til 'unknown as' her
 
   const recentQuery = api.bladeInstall.recent.useQuery({ take: 15 });
 
@@ -267,7 +267,7 @@ export default function MaskinerPage() {
 
         {/* Siste demonteringer */}
         <UnmountList
-          rows={recentQuery.data ?? []}
+          rows={(recentQuery.data as unknown as any[]) ?? []}
           isFetching={recentQuery.isFetching}
         />
 

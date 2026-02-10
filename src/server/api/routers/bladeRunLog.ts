@@ -34,6 +34,35 @@ export const bladeRunLogRouter = createTRPCRouter({
       });
     }),
 
+    upsert: protectedProcedure
+  .input(
+    z.object({
+      installId: z.string(),
+      sagtid: z.number().nullable(),
+      temperatur: z.number().nullable(),
+      stokkAnt: z.number().nullable(),
+      ampere: z.number().nullable(),
+    }),
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { installId, ...data } = input;
+
+    return ctx.db.bladeRunLog.upsert({
+      where: { installId }, // 🔑 pga @unique
+      create: {
+        orgId: ctx.auth.orgId!,
+        installId,
+        ...data,
+        createdById: ctx.auth.userId,
+      },
+      update: {
+        ...data,
+        updatedAt: new Date(),
+      },
+    });
+  }),
+
+
   /**
    * Opprett ny runLog (etterregistrering / feil / stopp / service)
    */
@@ -133,6 +162,8 @@ export const bladeRunLogRouter = createTRPCRouter({
           message: "ctx.db mangler i tRPC context",
         });
       }
+
+      
 
       const orgId = ctx.auth.orgId;
       if (!orgId) {

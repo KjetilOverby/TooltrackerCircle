@@ -135,7 +135,7 @@ model BladeInstall {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  runLogs BladeRunLog[]
+  runLog BladeRunLog?
 
   @@index([orgId])
   @@index([orgId, bladeId])
@@ -190,7 +190,7 @@ model BladeRunLog {
   orgId String
 
   /// Knytter målinger/hendelser til en spesifikk installasjon
-  installId String
+  installId String       @unique
   install   BladeInstall @relation(fields: [installId], references: [id], onDelete: Cascade)
 
   /// Når dette ble logget (kan være ved stopp/feil/service etc)

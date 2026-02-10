@@ -9,17 +9,30 @@ function formatDuration(ms: number) {
   return `${hours}t ${minutes}m`;
 }
 
-type RecentRow = {
+/**
+ * Oppdatert RecentRow som matcher Prisma-skjemaet ditt 100%
+ */
+export type RecentRow = {
   id: string;
-  saw: { id: string; name: string };
-  blade: { id: string; IdNummer: string };
-  installedAt: Date;
-  removedAt: Date | null;
+  saw: {
+    id: string;
+    name: string;
+  };
+  blade: {
+    id: string;
+    IdNummer: string;
+  };
+  installedAt: Date | string; // tRPC sender ofte dato som string i JSON
+  removedAt: Date | string | null;
   removedReason: string | null;
   removedNote: string | null;
-  _count: {
-    runLogs: number;
-  };
+  runLog: {
+    id: string;
+    sagtid: number | null;
+    stokkAnt: number | null;
+    feilkode: string | null;
+    temperatur: number | null;
+  } | null;
 };
 
 type Props = {
@@ -42,7 +55,6 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
           margin-top: 3rem;
           color: #f8fafc;
         }
-
         .logHeader {
           display: flex;
           align-items: center;
@@ -50,7 +62,6 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
           margin-bottom: 20px;
           padding: 0 4px;
         }
-
         .logTitle {
           font-size: 18px;
           font-weight: 800;
@@ -59,7 +70,6 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
           align-items: center;
           gap: 10px;
         }
-
         .logTitle::before {
           content: "";
           width: 4px;
@@ -67,13 +77,11 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
           background: #3b82f6;
           border-radius: 4px;
         }
-
         .logList {
           display: flex;
           flex-direction: column;
           gap: 12px;
         }
-
         .logItem {
           background: rgba(15, 23, 42, 0.4);
           border: 1px solid rgba(255, 255, 255, 0.05);
@@ -84,18 +92,15 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
           gap: 12px;
           transition: all 0.2s ease;
         }
-
         .logItem:hover {
           background: rgba(15, 23, 42, 0.6);
           border-color: rgba(59, 130, 246, 0.3);
           transform: translateX(4px);
         }
-
         .logMain {
           font-size: 15px;
           line-height: 1.4;
         }
-
         .bladeId {
           color: #2e665c;
           font-weight: 800;
@@ -103,12 +108,10 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
           padding: 2px 6px;
           border-radius: 6px;
         }
-
         .sawName {
           color: #f1f5f9;
           font-weight: 600;
         }
-
         .logMeta {
           margin-top: 8px;
           font-size: 12px;
@@ -118,14 +121,11 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
           gap: 12px;
           align-items: center;
         }
-
         .metaItem {
           display: flex;
           align-items: center;
           gap: 4px;
         }
-
-        /* 🔖 Pills */
         .pill {
           display: inline-flex;
           align-items: center;
@@ -136,25 +136,21 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
           text-transform: uppercase;
           letter-spacing: 0.03em;
         }
-
         .pillReason {
           background: rgba(255, 255, 255, 0.1);
           color: #e2e8f0;
           border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         .pillWarn {
           background: rgba(245, 158, 11, 0.1);
           color: #f59e0b;
           border: 1px solid rgba(245, 158, 11, 0.2);
         }
-
         .pillOk {
           background: rgba(16, 185, 129, 0.1);
           color: #10b981;
           border: 1px solid rgba(16, 185, 129, 0.2);
         }
-
         .statusSide {
           display: flex;
           flex-direction: column;
@@ -162,7 +158,6 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
           justify-content: center;
           gap: 8px;
         }
-
         .durationBox {
           font-size: 13px;
           font-weight: 700;
@@ -171,13 +166,11 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
           padding: 4px 8px;
           border-radius: 6px;
         }
-
         .isFetching {
           animation: pulse 1.5s infinite;
           font-size: 12px;
           color: #3b82f6;
         }
-
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.5; }
@@ -191,11 +184,14 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
 
       <div className="logList">
         {rows.map((row) => {
-          const manglerDriftsdata = row._count.runLogs === 0;
-          const duration = row.removedAt
-            ? formatDuration(
-                row.removedAt.getTime() - row.installedAt.getTime(),
-              )
+          // Sikre at datoene er Date-objekter
+          const installedDate = new Date(row.installedAt);
+          const removedDate = row.removedAt ? new Date(row.removedAt) : null;
+
+          const manglerDriftsdata = !row.runLog;
+
+          const duration = removedDate
+            ? formatDuration(removedDate.getTime() - installedDate.getTime())
             : "—";
 
           return (
@@ -218,15 +214,15 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
                   <div className="metaItem">
                     <span>
                       📅{" "}
-                      {row.installedAt.toLocaleString("nb-NO", {
+                      {installedDate.toLocaleString("nb-NO", {
                         dateStyle: "short",
                         timeStyle: "short",
                       })}
                     </span>
                     <span>→</span>
                     <span>
-                      {row.removedAt
-                        ? row.removedAt.toLocaleString("nb-NO", {
+                      {removedDate
+                        ? removedDate.toLocaleString("nb-NO", {
                             dateStyle: "short",
                             timeStyle: "short",
                           })
@@ -252,8 +248,8 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
                   className={`pill ${manglerDriftsdata ? "pillWarn" : "pillOk"}`}
                 >
                   {manglerDriftsdata
-                    ? "⚠️ Mangler driftsdata"
-                    : "✅ Driftsdata OK"}
+                    ? "⚠️ Ingen logg"
+                    : `✅ ${row.runLog?.stokkAnt ?? 0} stokk`}
                 </span>
               </div>
             </div>

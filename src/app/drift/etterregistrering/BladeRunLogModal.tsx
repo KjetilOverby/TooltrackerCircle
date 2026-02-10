@@ -1,8 +1,20 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 
-type CreateBladeRunLogInput = {
+export type BladeRunLogInitial = {
+  id: string;
+  loggedAt: Date;
+  sagtid: number | null;
+  feilkode: string | null;
+  temperatur: number | null;
+  sideklaring: number | null;
+  ampere: number | null;
+  stokkAnt: number | null;
+  alt: string | null;
+};
+
+type UpsertBladeRunLogInput = {
   installId: string;
   loggedAt: Date;
   sagtid?: number;
@@ -21,11 +33,14 @@ type BladeRunLogModalProps = {
   sawName?: string;
   bladeIdNummer?: string;
 
+  // ✅ prefill ved redigering
+  initial?: BladeRunLogInitial | null;
+
   isSaving?: boolean;
   error?: string | null;
 
   onClose: () => void;
-  onSave: (input: CreateBladeRunLogInput) => Promise<void> | void;
+  onSave: (input: UpsertBladeRunLogInput) => Promise<void> | void;
 };
 
 function toDatetimeLocalValue(d: Date) {
@@ -53,18 +68,26 @@ function parseNullableInt(value: string): number | null {
   return Math.trunc(n);
 }
 
+function numToStr(n: number | null | undefined) {
+  return n === null || n === undefined ? "" : String(n);
+}
+
 export default function BladeRunLogModal({
   open,
   installId,
   sawName,
   bladeIdNummer,
+  initial = null,
   isSaving = false,
   error = null,
   onClose,
   onSave,
 }: BladeRunLogModalProps) {
-  const defaultLoggedAt = useMemo(() => toDatetimeLocalValue(new Date()), []);
-  const [loggedAt, setLoggedAt] = useState(defaultLoggedAt);
+  const [loggedAt, setLoggedAt] = useState<string>(
+    toDatetimeLocalValue(new Date()),
+  );
+
+  console.log("initial i modal:", initial);
 
   const [sagtid, setSagtid] = useState<string>("");
   const [feilkode, setFeilkode] = useState<string>("");
@@ -78,7 +101,27 @@ export default function BladeRunLogModal({
 
   const [localError, setLocalError] = useState<string | null>(null);
 
-  const reset = () => {
+  useEffect(() => {
+    if (!open) return;
+
+    setLocalError(null);
+
+    // Hvis vi redigerer: bruk initial. Hvis ikke: default til nå.
+    const d = initial?.loggedAt ? new Date(initial.loggedAt) : new Date();
+    setLoggedAt(toDatetimeLocalValue(d));
+
+    setSagtid(numToStr(initial?.sagtid));
+    setFeilkode(initial?.feilkode ?? "");
+    setTemperatur(numToStr(initial?.temperatur));
+
+    setSideklaring(numToStr(initial?.sideklaring));
+    setAmpere(numToStr(initial?.ampere));
+    setStokkAnt(numToStr(initial?.stokkAnt));
+
+    setAlt(initial?.alt ?? "");
+  }, [open, initial?.id]);
+
+  const resetToEmpty = () => {
     setLoggedAt(toDatetimeLocalValue(new Date()));
     setSagtid("");
     setFeilkode("");
@@ -92,7 +135,9 @@ export default function BladeRunLogModal({
 
   const handleClose = () => {
     if (isSaving) return;
-    reset();
+    // Ikke “reset” her hvis du liker at den husker ved feil.
+    // Jeg resetter til tomt for å være konsekvent:
+    resetToEmpty();
     onClose();
   };
 
@@ -113,35 +158,34 @@ export default function BladeRunLogModal({
       }
     }
 
-    const input: CreateBladeRunLogInput = {
+    const tempInt = parseNullableInt(temperatur);
+    const sideNum = parseNullableNumber(sideklaring);
+    const ampNum = parseNullableNumber(ampere);
+    const stokkInt = parseNullableInt(stokkAnt);
+
+    const input: UpsertBladeRunLogInput = {
       installId,
       loggedAt: datetimeLocalToDate(loggedAt),
 
       ...(sagtidNum !== null ? { sagtid: sagtidNum } : {}),
       ...(feilkode.trim() ? { feilkode: feilkode.trim() } : {}),
-      ...(parseNullableInt(temperatur) !== null
-        ? { temperatur: parseNullableInt(temperatur)! }
-        : {}),
-      ...(parseNullableNumber(sideklaring) !== null
-        ? { sideklaring: parseNullableNumber(sideklaring)! }
-        : {}),
-      ...(parseNullableNumber(ampere) !== null
-        ? { ampere: parseNullableNumber(ampere)! }
-        : {}),
-      ...(parseNullableInt(stokkAnt) !== null
-        ? { stokkAnt: parseNullableInt(stokkAnt)! }
-        : {}),
+      ...(tempInt !== null ? { temperatur: tempInt } : {}),
+      ...(sideNum !== null ? { sideklaring: sideNum } : {}),
+      ...(ampNum !== null ? { ampere: ampNum } : {}),
+      ...(stokkInt !== null ? { stokkAnt: stokkInt } : {}),
       ...(alt.trim() ? { alt: alt.trim() } : {}),
     };
 
     await onSave(input);
 
-    // hvis save lykkes (ingen exception), lukk + reset
-    reset();
+    // Lukk + reset etter vellykket lagring
+    resetToEmpty();
     onClose();
   };
 
   if (!open) return null;
+
+  const isEdit = Boolean(initial?.id);
 
   return (
     <div className="modalBackdrop" onClick={handleClose}>
@@ -153,7 +197,9 @@ export default function BladeRunLogModal({
       >
         <div className="modalHeader">
           <div>
-            <h2>Etterregistrer driftsdata</h2>
+            <h2>
+              {isEdit ? "Rediger driftsdata" : "Etterregistrer driftsdata"}
+            </h2>
             <div className="modalSub">
               {sawName ? <span>🪚 {sawName}</span> : null}
               {bladeIdNummer ? <span> • Blad: {bladeIdNummer}</span> : null}
@@ -198,17 +244,6 @@ export default function BladeRunLogModal({
             />
             <small className="hint">0,5-intervaller anbefales.</small>
           </label>
-
-          {/* <label className="field">
-            <span>Feilkode</span>
-            <input
-              type="text"
-              placeholder="valgfritt"
-              value={feilkode}
-              onChange={(e) => setFeilkode(e.target.value)}
-              disabled={isSaving}
-            />
-          </label> */}
 
           <label className="field">
             <span>Temperatur (°C)</span>
@@ -285,7 +320,7 @@ export default function BladeRunLogModal({
             onClick={handleSaveClick}
             disabled={isSaving || !installId}
           >
-            {isSaving ? "Lagrer…" : "Lagre"}
+            {isSaving ? "Lagrer…" : isEdit ? "Oppdater" : "Lagre"}
           </button>
         </div>
 
