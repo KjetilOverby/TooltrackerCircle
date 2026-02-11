@@ -488,7 +488,64 @@ if (!orgId) {
     return { current };
   }),
 
+  update: protectedProcedure
+  .input(
+    z.object({
+      id: z.string().min(1), // ID-en til BladeInstall-raden
+      installedAt: z.date().optional(),
+      removedAt: z.date().optional().nullable(),
+      removedReason: z.string().optional().nullable(),
+      removedNote: z.string().optional().nullable(),
+      note: z.string().optional().nullable(),
+    }),
+  )
+  .mutation(async ({ ctx, input }) => {
+    const orgId = ctx.auth.orgId;
+    if (!orgId) throw new TRPCError({ code: "UNAUTHORIZED", message: "Mangler org" });
 
+    const { id, ...data } = input;
+
+    // Sjekk at posten faktisk tilhører brukerens organisasjon før oppdatering
+    const existing = await ctx.db.bladeInstall.findFirst({
+      where: { id, orgId },
+    });
+
+    if (!existing) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Fant ikke installasjonen eller du mangler tilgang.",
+      });
+    }
+
+    return ctx.db.bladeInstall.update({
+      where: { id },
+      data: {
+        ...data,
+        // Vi kan logge hvem som gjorde endringen hvis du har et "updatedById" felt
+        // updatedById: ctx.auth.userId 
+      },
+    });
+  }),
+
+delete: protectedProcedure
+  .input(z.object({ id: z.string().min(1) }))
+  .mutation(async ({ ctx, input }) => {
+    const orgId = ctx.auth.orgId;
+    if (!orgId) throw new TRPCError({ code: "UNAUTHORIZED", message: "Mangler org" });
+
+    // Verifiser eierskap før sletting
+    const existing = await ctx.db.bladeInstall.findFirst({
+      where: { id: input.id, orgId },
+    });
+
+    if (!existing) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "Posten finnes ikke." });
+    }
+
+    return ctx.db.bladeInstall.delete({
+      where: { id: input.id },
+    });
+  }),
 
   
 });

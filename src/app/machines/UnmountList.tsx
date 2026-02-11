@@ -1,5 +1,8 @@
 "use client";
 import React from "react";
+import { type RouterOutputs } from "~/trpc/react";
+
+type RecentInstall = RouterOutputs["bladeInstall"]["recent"][number];
 
 function formatDuration(ms: number) {
   const totalMinutes = Math.max(0, Math.floor(ms / 60000));
@@ -9,38 +12,13 @@ function formatDuration(ms: number) {
   return `${hours}t ${minutes}m`;
 }
 
-/**
- * Oppdatert RecentRow som matcher Prisma-skjemaet ditt 100%
- */
-export type RecentRow = {
-  id: string;
-  saw: {
-    id: string;
-    name: string;
-  };
-  blade: {
-    id: string;
-    IdNummer: string;
-  };
-  installedAt: Date | string; // tRPC sender ofte dato som string i JSON
-  removedAt: Date | string | null;
-  removedReason: string | null;
-  removedNote: string | null;
-  runLog: {
-    id: string;
-    sagtid: number | null;
-    stokkAnt: number | null;
-    feilkode: string | null;
-    temperatur: number | null;
-  } | null;
-};
-
 type Props = {
-  rows: RecentRow[];
+  rows: RecentInstall[]; // Bruk den automatiske typen
   isFetching: boolean;
+  onEdit?: (row: RecentInstall) => void; // Bruk den automatiske typen
 };
 
-const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
+const UnmountList: React.FC<Props> = ({ rows, isFetching, onEdit }) => {
   if (!rows.length) return null;
 
   return (
@@ -88,14 +66,15 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
           border-radius: 16px;
           padding: 16px;
           display: grid;
-          grid-template-columns: 1fr auto;
-          gap: 12px;
+          /* Justert grid for å gi plass til knapper på høyre side */
+          grid-template-columns: 1fr auto auto; 
+          gap: 16px;
+          align-items: center;
           transition: all 0.2s ease;
         }
         .logItem:hover {
           background: rgba(15, 23, 42, 0.6);
           border-color: rgba(59, 130, 246, 0.3);
-          transform: translateX(4px);
         }
         .logMain {
           font-size: 15px;
@@ -121,11 +100,6 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
           gap: 12px;
           align-items: center;
         }
-        .metaItem {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-        }
         .pill {
           display: inline-flex;
           align-items: center;
@@ -136,27 +110,16 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
           text-transform: uppercase;
           letter-spacing: 0.03em;
         }
-        .pillReason {
-          background: rgba(255, 255, 255, 0.1);
-          color: #e2e8f0;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .pillWarn {
-          background: rgba(245, 158, 11, 0.1);
-          color: #f59e0b;
-          border: 1px solid rgba(245, 158, 11, 0.2);
-        }
-        .pillOk {
-          background: rgba(16, 185, 129, 0.1);
-          color: #10b981;
-          border: 1px solid rgba(16, 185, 129, 0.2);
-        }
+        .pillReason { background: rgba(255, 255, 255, 0.1); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .pillWarn { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+        .pillOk { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
+        
         .statusSide {
           display: flex;
           flex-direction: column;
           align-items: flex-end;
-          justify-content: center;
-          gap: 8px;
+          gap: 6px;
+          min-width: 100px;
         }
         .durationBox {
           font-size: 13px;
@@ -166,6 +129,36 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
           padding: 4px 8px;
           border-radius: 6px;
         }
+
+        /* --- NYE KNAPP-STILER --- */
+        .actionButtons {
+          display: flex;
+          gap: 8px;
+          padding-left: 12px;
+          border-left: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .btnAction {
+          cursor: pointer;
+          border: none;
+          border-radius: 8px;
+          padding: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+          color: #cbd5e1;
+          background: rgba(255, 255, 255, 0.05);
+        }
+        .btnEdit:hover {
+          background: rgba(59, 130, 246, 0.2);
+          color: #60a5fa;
+        }
+        .btnDelete:hover {
+          background: rgba(239, 68, 68, 0.2);
+          color: #f87171;
+        }
+        /* ----------------------- */
+
         .isFetching {
           animation: pulse 1.5s infinite;
           font-size: 12px;
@@ -179,17 +172,15 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
 
       <div className="logHeader">
         <div className="logTitle">Siste demonteringer</div>
+
         {isFetching && <div className="isFetching">Oppdaterer logg...</div>}
       </div>
 
       <div className="logList">
         {rows.map((row) => {
-          // Sikre at datoene er Date-objekter
           const installedDate = new Date(row.installedAt);
           const removedDate = row.removedAt ? new Date(row.removedAt) : null;
-
           const manglerDriftsdata = !row.runLog;
-
           const duration = removedDate
             ? formatDuration(removedDate.getTime() - installedDate.getTime())
             : "—";
@@ -229,16 +220,12 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
                         : "—"}
                     </span>
                   </div>
-
-                  {row.removedNote ? (
-                    <div className="metaItem" style={{ color: "#d9dbdb" }}>
-                      {row.removedNote}
-                    </div>
-                  ) : (
-                    <div className="metaItem" style={{ color: "#9ca3af" }}>
-                      Demontert
-                    </div>
-                  )}
+                  <div
+                    className="metaItem"
+                    style={{ color: row.removedNote ? "#d9dbdb" : "#9ca3af" }}
+                  >
+                    {row.removedNote ?? "Demontert"}
+                  </div>
                 </div>
               </div>
 
@@ -249,8 +236,49 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching }) => {
                 >
                   {manglerDriftsdata
                     ? "⚠️ Ingen logg"
-                    : `✅ ${row.runLog?.stokkAnt ?? 0} stokk`}
+                    : `✅ ${row.runLog?.stokkAnt ?? 0} stk`}
                 </span>
+              </div>
+
+              {/* HANDLINGS-KNAPPER */}
+              <div className="actionButtons">
+                <button
+                  onClick={() => onEdit && onEdit(row)}
+                  title="Rediger"
+                  className="btnAction btnEdit"
+                >
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                    <path d="m15 5 4 4" />
+                  </svg>
+                </button>
+                <button title="Slett" className="btnAction btnDelete">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M3 6h18" />
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                    <line x1="10" x2="10" y1="11" y2="17" />
+                    <line x1="14" x2="14" y1="11" y2="17" />
+                  </svg>
+                </button>
               </div>
             </div>
           );

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { api } from "~/trpc/react";
 import UnmountList from "./UnmountList";
 import UninstallModal from "./UninstallModal";
@@ -8,6 +8,11 @@ import InstallModal from "../create/InstallModal";
 import MachineList from "./MachineList";
 import ChangeBladeModal from "./ChangeBladeModal";
 import MoveBladeModal from "./MoveBladeModal";
+import EditInstallModal from "./EditInstallModal";
+
+import { type RouterOutputs } from "~/trpc/react";
+
+type RecentInstall = RouterOutputs["bladeInstall"]["recent"][number];
 
 type SawForMachines = {
   id: string;
@@ -39,22 +44,33 @@ export default function MaskinerPage() {
   const recentQuery = api.bladeInstall.recent.useQuery({ take: 15 });
 
   // -----------------------------
+  // EDIT INSTALL (Rediger loggføring)
+  // -----------------------------
+
+  const updateMutation = api.bladeInstall.update.useMutation({
+    onSuccess: () => {
+      setEditingRow(null);
+      void recentQuery.refetch(); // Oppdaterer listen
+    },
+  });
+
+  // -----------------------------
   // Install modal (Monter)
   // -----------------------------
-  const [installOpen, setInstallOpen] = React.useState(false);
-  const [installSaw, setInstallSaw] = React.useState<SawForMachines | null>(
-    null,
-  );
-  const [search, setSearch] = React.useState("");
-  const [selectedBlade, setSelectedBlade] = React.useState<Blade | null>(null);
+  const [installOpen, setInstallOpen] = useState(false);
+  const [installSaw, setInstallSaw] = useState<SawForMachines | null>(null);
+  const [search, setSearch] = useState("");
+  const [selectedBlade, setSelectedBlade] = useState<Blade | null>(null);
 
-  const [bladeSearch, setBladeSearch] = React.useState("");
+  const [bladeSearch, setBladeSearch] = useState("");
 
   const bladesForInstallQuery = api.sawBlade.list.useQuery(
     { q: search },
     { enabled: installOpen },
   );
   const bladesForInstall = (bladesForInstallQuery.data ?? []) as Blade[];
+
+  const [editingRow, setEditingRow] = useState<RecentInstall | null>(null);
 
   const installMutation = api.bladeInstall.install.useMutation({
     onSuccess: () => {
@@ -269,6 +285,7 @@ export default function MaskinerPage() {
         <UnmountList
           rows={(recentQuery.data as unknown as any[]) ?? []}
           isFetching={recentQuery.isFetching}
+          onEdit={(row) => setEditingRow(row)} // <--- Send ned denne
         />
 
         {/* Bytt blad */}
@@ -306,6 +323,16 @@ export default function MaskinerPage() {
             moveFromSaw ? { id: moveFromSaw.id, name: moveFromSaw.name } : null
           }
           saws={saws.map((s) => ({ id: s.id, name: s.name }))}
+        />
+
+        <EditInstallModal
+          isOpen={!!editingRow}
+          data={editingRow}
+          onClose={() => setEditingRow(null)}
+          isSaving={updateMutation.isPending}
+          onSave={(payload) => {
+            updateMutation.mutate(payload);
+          }}
         />
       </div>
 
