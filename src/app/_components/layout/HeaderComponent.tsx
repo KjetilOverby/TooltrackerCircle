@@ -350,7 +350,7 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
               <p>Statistikk</p>
               <Link
                 className="menuItem"
-                href="/drift/statistikk"
+                href="/drift/statistikk/bladbytte"
                 onClick={closeAll}
                 role="menuitem"
               >
@@ -359,6 +359,20 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
                 </span>
                 <span className="menuMain">
                   <span className="menuTitle">Bytteårsaker</span>
+                  <span className="menuSub">Nøkkeltall og utvikling</span>
+                </span>
+              </Link>
+              <Link
+                className="menuItem"
+                href="/drift/statistikk/produksjon"
+                onClick={closeAll}
+                role="menuitem"
+              >
+                <span className="menuIcon">
+                  <Icon name="chart" />
+                </span>
+                <span className="menuMain">
+                  <span className="menuTitle">Produksjon</span>
                   <span className="menuSub">Nøkkeltall og utvikling</span>
                 </span>
               </Link>
@@ -478,7 +492,7 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
                   </span>
                 </span>
               </Link>
-              <Link
+              {/* <Link
                 className="menuItem"
                 href="/oversikt"
                 onClick={closeAll}
@@ -493,7 +507,7 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
                     Oversikt over sagblad i systemet
                   </span>
                 </span>
-              </Link>
+              </Link> */}
             </div>
           </details>
         </nav>
