@@ -373,7 +373,7 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
                 </span>
                 <span className="menuMain">
                   <span className="menuTitle">Produksjon</span>
-                  <span className="menuSub">Nøkkeltall og utvikling</span>
+                  <span className="menuSub">Antall stokk og tid</span>
                 </span>
               </Link>
             </div>
@@ -396,10 +396,10 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
             </summary>
 
             <div className="menu" role="menu">
-              {/* 
+              <p>Service</p>
               <Link
                 className="menuItem"
-                href="/service"
+                href="/service/search"
                 onClick={closeAll}
                 role="menuitem"
               >
@@ -407,11 +407,11 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
                   <Icon name="service" />
                 </span>
                 <span className="menuMain">
-                  <span className="menuTitle">Oversikt</span>
-                  <span className="menuSub">Status og åpne oppgaver</span>
+                  <span className="menuTitle">Søk</span>
+                  <span className="menuSub">Legg til og søk service</span>
                 </span>
               </Link>
-
+              {/* 
               <Link
                 className="menuItem"
                 href="/service/hendelser"

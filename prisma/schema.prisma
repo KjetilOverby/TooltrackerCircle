@@ -34,9 +34,12 @@ model Saw {
 
   note String?
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdById String? // Clerk user id (valgfritt)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  createdById      String? // Clerk user id (valgfritt)
+  // NYE FELT FOR MÅLTALL
+  targetEfficiency Float?   @default(300) // Mål i stokker/t
+  targetOEE        Float?   @default(85) // Mål i prosent (f.eks 85%)
 
   installs BladeInstall[]
 
@@ -158,17 +161,16 @@ model BladeService {
   blade   SawBlade @relation(fields: [bladeId], references: [id], onDelete: Restrict)
 
   serviceType String?
-  serviceDone String?
+  datoInn     DateTime
+  datoUt      DateTime?
 
-  datoInn             DateTime
-  datoUt              DateTime?
-  supplierCompletedAt DateTime?
-
-  antRep       Int @default(0)
-  antTannslipp Int @default(0)
-
+  antRep       Int     @default(0)
+  antTannslipp Int     @default(0)
   feilkode     String?
-  handling     String?
+
+  // Kobling til loggføringen av handlinger
+  actions ServiceAction[]
+
   note         String?
   noteCustomer String?
   noteSupplier String?
@@ -177,12 +179,41 @@ model BladeService {
   updatedAt   DateTime @updatedAt
   createdById String?
 
-  // BACK-RELATION (NYTT NAVN)
   installs BladeInstall[]
 
   @@index([orgId])
   @@index([orgId, bladeId])
   @@index([orgId, datoInn])
+}
+
+// 1. Denne tabellen logger at en spesifikk kode ble brukt på en spesifikk service
+model ServiceAction {
+  id        String       @id @default(cuid())
+  serviceId String
+  service   BladeService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  // Peker til hvilken kode som ble brukt
+  kodeId String
+  kode   ServiceKode @relation(fields: [kodeId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([serviceId])
+  @@index([kodeId])
+}
+
+// 2. Denne tabellen er "menyen" (SERV 402, SERV 407 osv)
+model ServiceKode {
+  id    String @id @default(cuid())
+  orgId String
+  code  String // f.eks "SERV 402"
+  name  String // f.eks "SLIP HM/STELLIT"
+
+  // Relasjon tilbake for å se all bruk av denne koden
+  usedIn ServiceAction[]
+
+  @@unique([orgId, code])
+  @@index([orgId])
 }
 
 model BladeRunLog {
