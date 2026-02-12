@@ -11,6 +11,7 @@ import MoveBladeModal from "./MoveBladeModal";
 import EditInstallModal from "./EditInstallModal";
 
 import { type RouterOutputs } from "~/trpc/react";
+import ConfirmDeleteModal from "../_components/common/ConfirmDeleteModal";
 
 type RecentInstall = RouterOutputs["bladeInstall"]["recent"][number];
 
@@ -61,6 +62,8 @@ export default function MaskinerPage() {
   const [installSaw, setInstallSaw] = useState<SawForMachines | null>(null);
   const [search, setSearch] = useState("");
   const [selectedBlade, setSelectedBlade] = useState<Blade | null>(null);
+
+  const [rowToDelete, setRowToDelete] = useState<RecentInstall | null>(null);
 
   const [bladeSearch, setBladeSearch] = useState("");
 
@@ -239,6 +242,17 @@ export default function MaskinerPage() {
     });
   }
 
+  const deleteMutation = api.bladeInstall.delete.useMutation({
+    onSuccess: () => {
+      // Valgfritt: Vis en liten toast eller melding
+      void recentQuery.refetch(); // Oppdaterer listen så raden forsvinner
+      void sawsQuery.refetch(); // Oppdaterer sag-status i tilfelle det var et aktivt blad
+    },
+    onError: (err) => {
+      alert("Feil ved sletting: " + err.message);
+    },
+  });
+
   return (
     <div className="page">
       <div className="container">
@@ -285,7 +299,8 @@ export default function MaskinerPage() {
         <UnmountList
           rows={(recentQuery.data as unknown as any[]) ?? []}
           isFetching={recentQuery.isFetching}
-          onEdit={(row) => setEditingRow(row)} // <--- Send ned denne
+          onEdit={(row) => setEditingRow(row)}
+          onDelete={(row) => setRowToDelete(row)}
         />
 
         {/* Bytt blad */}
@@ -333,6 +348,25 @@ export default function MaskinerPage() {
           onSave={(payload) => {
             updateMutation.mutate(payload);
           }}
+        />
+        <ConfirmDeleteModal
+          isOpen={!!rowToDelete}
+          onClose={() => setRowToDelete(null)}
+          onConfirm={() => {
+            if (rowToDelete) {
+              deleteMutation.mutate({ id: rowToDelete.id });
+              setRowToDelete(null);
+            }
+          }}
+          title="Slett loggføring"
+          message={`Er du sikker på at du vil slette loggen for ${rowToDelete?.blade.IdNummer} på ${rowToDelete?.saw.name}?`}
+          // HER skjer magien: Vi sender bare dangerMessage hvis det finnes runLog!
+          dangerMessage={
+            rowToDelete?.runLog
+              ? "Denne posten inneholder driftsdata (sagtid/stokk). Sletting vil fjerne denne statistikken permanent!"
+              : undefined
+          }
+          isDeleting={deleteMutation.isPending}
         />
       </div>
 

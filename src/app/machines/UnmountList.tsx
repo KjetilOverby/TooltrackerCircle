@@ -16,9 +16,15 @@ type Props = {
   rows: RecentInstall[]; // Bruk den automatiske typen
   isFetching: boolean;
   onEdit?: (row: RecentInstall) => void; // Bruk den automatiske typen
+  onDelete?: (row: RecentInstall) => void;
 };
 
-const UnmountList: React.FC<Props> = ({ rows, isFetching, onEdit }) => {
+const UnmountList: React.FC<Props> = ({
+  rows,
+  isFetching,
+  onEdit,
+  onDelete,
+}) => {
   if (!rows.length) return null;
 
   return (
@@ -261,7 +267,11 @@ const UnmountList: React.FC<Props> = ({ rows, isFetching, onEdit }) => {
                     <path d="m15 5 4 4" />
                   </svg>
                 </button>
-                <button title="Slett" className="btnAction btnDelete">
+                <button
+                  onClick={() => onDelete?.(row)}
+                  title="Slett"
+                  className="btnAction btnDelete"
+                >
                   <svg
                     width="18"
                     height="18"
