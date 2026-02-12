@@ -295,6 +295,7 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
             </summary>
 
             <div className="menu" role="menu">
+              <p>Drift</p>
               <Link
                 className="menuItem"
                 href="/machines"
@@ -345,7 +346,8 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
                   </span>
                 </span>
               </Link> */}
-
+              <hr />
+              <p>Statistikk</p>
               <Link
                 className="menuItem"
                 href="/drift/statistikk"
@@ -356,7 +358,7 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
                   <Icon name="chart" />
                 </span>
                 <span className="menuMain">
-                  <span className="menuTitle">Statistikk</span>
+                  <span className="menuTitle">Bytteårsaker</span>
                   <span className="menuSub">Nøkkeltall og utvikling</span>
                 </span>
               </Link>
