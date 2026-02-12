@@ -329,9 +329,9 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
                 </span>
               </Link>
 
-              <Link
+              {/* <Link
                 className="menuItem"
-                href="/drift/historikk"
+                href=""
                 onClick={closeAll}
                 role="menuitem"
               >
@@ -344,7 +344,7 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
                     Se tidligere drift per sag/blad
                   </span>
                 </span>
-              </Link>
+              </Link> */}
 
               <Link
                 className="menuItem"
@@ -380,6 +380,7 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
             </summary>
 
             <div className="menu" role="menu">
+              {/* 
               <Link
                 className="menuItem"
                 href="/service"
@@ -423,7 +424,7 @@ export default function Navbar({ showOrg = true, showUser = true }: Props) {
                   <span className="menuTitle">Planlagt service</span>
                   <span className="menuSub">Intervall og kommende jobber</span>
                 </span>
-              </Link>
+              </Link> */}
             </div>
           </details>
 
