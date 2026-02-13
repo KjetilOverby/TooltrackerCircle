@@ -32,7 +32,16 @@ interface CreateInputComponentProps {
   isLoading?: boolean;
 }
 
-const produsenter = ["Kanefusa", "Frezite", "Tenryu", "Apsi", "Ukjent"];
+const produsenter = [
+  "Nässjö",
+  "LSAB",
+  "Kanefusa",
+  "Nook",
+  "Apsi",
+  "Tenryu",
+  "Andre",
+  "Ukjent",
+];
 
 const CreateInputComponent: React.FC<CreateInputComponentProps> = ({
   handleSubmit,

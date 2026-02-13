@@ -63,6 +63,11 @@ model BladeType {
   createdById String? // Clerk user id
   artikkel    String?
 
+  // Optional mål - kunden trenger ikke fylle ut alt
+  targetTotalStokker Int? // Kan være null
+  targetTotalHours   Float? // Kan være null
+  targetOmloddinger  Int? // Kan være null
+
   blades SawBlade[]
 
   @@unique([orgId, name])

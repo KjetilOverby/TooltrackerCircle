@@ -67,7 +67,7 @@ export default function SearchComponent() {
   const totalSagtid = allLogs.reduce((acc, log) => acc + (log.sagtid ?? 0), 0);
 
   // Status styling
-  let statusLabel = "KLAR PÅ LAGER";
+  let statusLabel = "LEDIG";
   let statusClass = "bg-ok";
   if (isDeleted) {
     statusLabel = "KASSERT";
@@ -142,7 +142,7 @@ export default function SearchComponent() {
                   </div>
                   <div className="detail-item">
                     <label>Side</label>
-                    <span>{blade.side ?? "N/A"}</span>
+                    <span>{blade.side ?? "Har ikke side"}</span>
                   </div>
                 </div>
               </div>
