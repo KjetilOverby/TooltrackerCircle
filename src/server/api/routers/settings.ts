@@ -239,5 +239,40 @@ export const settingsRouter = createTRPCRouter({
       }),
   }),
 
+  // SERVICE KODER
+
+  create: protectedProcedure
+    .input(
+      z.object({
+        code: z.string().min(1, "Kode er påkrevd (f.eks. SERV 402)"),
+        name: z.string().min(1, "Navn er påkrevd (f.eks. SLIP HM/STELLIT)"),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const orgId = requireOrgId(ctx.auth.orgId);
+
+      return ctx.db.serviceKode.create({
+        data: {
+          orgId,
+          code: input.code.trim(),
+          name: input.name.trim(),
+        },
+      });
+    }),
+
+    getAllCodes: protectedProcedure
+    .query(async ({ ctx }) => {
+      const orgId = requireOrgId(ctx.auth.orgId);
+
+      return ctx.db.serviceKode.findMany({
+        where: {
+          orgId: orgId,
+        },
+        orderBy: {
+          code: 'asc', // Sorterer slik at SERV 402 kommer før SERV 407
+        },
+      });
+    }),
+
 
 });

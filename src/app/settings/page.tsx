@@ -6,6 +6,8 @@ import type { RouterOutputs } from "~/trpc/react";
 import BladeTypeInputComponent from "./BladeTypeInputComponent";
 import { BsMotherboardFill } from "react-icons/bs";
 import { GiCircularSawblade } from "react-icons/gi";
+import ServiceKodeInput from "./ServiceKodeInput";
+import ServiceKodeTable from "./ServiceCodeTable";
 
 type BladeTypeRow = RouterOutputs["settings"]["bladeType"]["list"][number];
 type SawRow = RouterOutputs["settings"]["saw"]["list"][number];
@@ -174,65 +176,99 @@ export default function Page() {
   return (
     <div className="page">
       <div className="container">
-        {/* ✅ Viktig: angi generics eksplisitt for å unngå TS-krøll */}
-        <BladeTypeInputComponent<any> // Bytt ut <BladeTypeRow> med <any>
-          mode={btMode}
-          editingItem={editingBladeType}
-          items={bladeItems}
-          isLoading={bladeTypesQuery.isLoading}
-          onStartEdit={startBladeTypeEdit}
-          onStartCreate={startBladeTypeCreate}
-          onSubmit={onSubmitBladeType}
-          isSaving={createBladeType.isPending || updateBladeType.isPending}
-          errorMsg={btError}
-          header="Sagbladtyper"
-          subheader="Legg til sagbladtype"
-          emptyText="Ingen bladtyper er lagt inn enda."
-          icon={<GiCircularSawblade size={30} color="mediumseagreen" />}
-          name={btName}
-          onNameChange={setBtName}
-          note={btNote}
-          onNoteChange={setBtNote}
-          showHasSide
-          hasSide={btHasSide}
-          onHasSideChange={setBtHasSide}
-          artikkel={btArtikkel}
-          onArtikkelChange={setBtArtikkel}
-          lagerBeholdning={btLager ?? undefined}
-          onLagerBeholdningChange={(v) => setBtLager(v ?? null)}
-        />
+        <div className="main-stack">
+          <section className="item-wrapper">
+            <BladeTypeInputComponent<any>
+              mode={btMode}
+              editingItem={editingBladeType}
+              items={bladeItems}
+              isLoading={bladeTypesQuery.isLoading}
+              onStartEdit={startBladeTypeEdit}
+              onStartCreate={startBladeTypeCreate}
+              onSubmit={onSubmitBladeType}
+              isSaving={createBladeType.isPending || updateBladeType.isPending}
+              errorMsg={btError}
+              header="Sagbladtyper"
+              subheader="Legg til sagbladtype"
+              emptyText="Ingen bladtyper er lagt inn enda."
+              icon={<GiCircularSawblade size={30} color="mediumseagreen" />}
+              name={btName}
+              onNameChange={setBtName}
+              note={btNote}
+              onNoteChange={setBtNote}
+              showHasSide
+              hasSide={btHasSide}
+              onHasSideChange={setBtHasSide}
+              artikkel={btArtikkel}
+              onArtikkelChange={setBtArtikkel}
+              lagerBeholdning={btLager ?? undefined}
+              onLagerBeholdningChange={(v) => setBtLager(v ?? null)}
+            />
+          </section>
 
-        <BladeTypeInputComponent<any> // Endre fra <SawRow> til <any> her
-          mode={sawMode}
-          editingItem={editingSaw}
-          items={sawItems}
-          isLoading={sawTypesQuery.isLoading} // Denne er riktig!
-          onStartEdit={startSawEdit}
-          onStartCreate={startSawCreate}
-          onSubmit={onSubmitSaw}
-          isSaving={createSaw.isPending || updateSaw.isPending}
-          errorMsg={sawError}
-          header="Sagmaskiner"
-          subheader="Legg til sagmaskin"
-          emptyText="Ingen sagmaskiner er lagt inn enda."
-          icon={<BsMotherboardFill size={30} color="Tomato" />}
-          name={sawName}
-          onNameChange={setSawName}
-          note={sawNote}
-          onNoteChange={setSawNote}
-          showHasSide={false}
-        />
+          <section className="item-wrapper">
+            <BladeTypeInputComponent<any>
+              mode={sawMode}
+              editingItem={editingSaw}
+              items={sawItems}
+              isLoading={sawTypesQuery.isLoading}
+              onStartEdit={startSawEdit}
+              onStartCreate={startSawCreate}
+              onSubmit={onSubmitSaw}
+              isSaving={createSaw.isPending || updateSaw.isPending}
+              errorMsg={sawError}
+              header="Sagmaskiner"
+              subheader="Legg til sagmaskin"
+              emptyText="Ingen sagmaskiner er lagt inn enda."
+              icon={<BsMotherboardFill size={30} color="Tomato" />}
+              name={sawName}
+              onNameChange={setSawName}
+              note={sawNote}
+              onNoteChange={setSawNote}
+              showHasSide={false}
+            />
+          </section>
+
+          <section className="item-wrapper">
+            <ServiceKodeTable />
+          </section>
+        </div>
       </div>
 
       <style jsx>{`
         .page {
           min-height: calc(100vh - 64px);
-          padding: 18px 0 46px;
+          /* En veldig subtil gråfarge som gir kontrast til hvite komponenter */
+          background-color: #f1f5f9;
+          padding: 40px 0 80px;
         }
+
         .container {
-          max-width: 1180px;
+          max-width: 1100px;
           margin: 0 auto;
-          padding: clamp(14px, 3vw, 26px);
+          padding: 0 20px;
+        }
+
+        .main-stack {
+          display: flex;
+          flex-direction: column;
+          /* Økt mellomrom til 64px for skikkelig luft mellom seksjonene */
+          gap: 64px;
+        }
+
+        .item-wrapper {
+          /* Vi fjerner hvit bakgrunn herfra slik at komponenten inni styrer sitt eget utseende */
+          width: 100%;
+        }
+
+        /* Responsiv justering for mobil */
+        @media (max-width: 768px) {
+          .main-stack {
+            gap: 40px;
+          }
+          .page {
+            padding: 20px 0 40px;
+          }
         }
       `}</style>
     </div>
