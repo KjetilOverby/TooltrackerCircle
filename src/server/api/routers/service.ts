@@ -21,17 +21,14 @@ getByExactIdNummer: protectedProcedure
       where: { orgId, IdNummer: input.idNummer.trim(), deleted: false },
       include: {
         bladeType: true,
-        // HER: Sørg for at alle relevante felter hentes fra BladeService
         services: { 
           orderBy: { datoInn: "desc" },
-          select: {
-            id: true,
-            datoInn: true,
-            datoUt: true,
-            serviceType: true, // Henter typen (Sliping, Omlodding osv)
-            note: true,        // Henter notatet du skrev i modalen
-            antRep: true,
-            antTannslipp: true,
+          include: {
+            actions: {
+              include: {
+                kode: true // I skjemaet ditt heter det 'kode', ikke 'code'
+              }
+            }
           }
         },
         installs: {
@@ -48,52 +45,59 @@ getByExactIdNummer: protectedProcedure
   
   // Registrer blad inn til service (Denne matcher frontend 'create')
   create: protectedProcedure
-    .input(z.object({ 
-      bladeId: z.string().min(1),
-      serviceType: z.string().optional(),
-      note: z.string().optional(),
-      datoInn: z.date().default(() => new Date()),
-    }))
-    .mutation(async ({ ctx, input }) => {
-      const orgId = requireOrgId(ctx.auth.orgId);
+  .input(z.object({ 
+    bladeId: z.string().min(1),
+    serviceType: z.string().optional(),
+    note: z.string().optional(),
+    datoInn: z.date().default(() => new Date()),
+    feilkode: z.string().optional(), // Dette er valideringen
+  }))
+  .mutation(async ({ ctx, input }) => {
+    const orgId = requireOrgId(ctx.auth.orgId);
 
-      // Sjekk om bladet allerede er på service
-      const existing = await ctx.db.bladeService.findFirst({
-        where: { orgId, bladeId: input.bladeId, datoUt: null },
-      });
-      if (existing) throw new Error("Bladet er allerede registrert på service");
+    // Sjekk om bladet allerede er på service
+    const existing = await ctx.db.bladeService.findFirst({
+      where: { orgId, bladeId: input.bladeId, datoUt: null },
+    });
+    if (existing) throw new Error("Bladet er allerede registrert på service");
 
-      return ctx.db.bladeService.create({
-        data: {
-          orgId,
-          bladeId: input.bladeId,
-          datoInn: input.datoInn,
-          serviceType: input.serviceType,
-          note: input.note,
-          createdById: ctx.auth.userId,
-        },
-      });
-    }),
+    return ctx.db.bladeService.create({
+      data: {
+        orgId,
+        bladeId: input.bladeId,
+        datoInn: input.datoInn,
+        serviceType: input.serviceType,
+        note: input.note,
+        createdById: ctx.auth.userId,
+        feilkode: input.feilkode, // <--- HER SKAL DET STÅ input.feilkode
+      },
+    });
+  }),
   
     // Registrer blad ut av service (Ferdig)
     checkOut: protectedProcedure
-    .input(z.object({
-      serviceId: z.string(),
-      datoUt: z.date(),
-      noteSupplier: z.string().optional(),
-      // En array med ID-er til ServiceKodene (f.eks. id til SERV 402, SERV 407)
-      selectedKodeIds: z.array(z.string()),
-    }))
+    .input(
+      z.object({
+        serviceId: z.string(),
+        datoUt: z.date(),
+        noteSupplier: z.string().optional(),
+        selectedKodeIds: z.array(z.string()),
+        antRep: z.number(),         // Legg til denne
+        antTannslipp: z.number(),   // Legg til denne
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.bladeService.update({
         where: { id: input.serviceId },
         data: {
           datoUt: input.datoUt,
           noteSupplier: input.noteSupplier,
-          // Her oppretter vi koblingene i ServiceAction-tabellen
+          antRep: input.antRep,
+          antTannslipp: input.antTannslipp,
+          // Husk å koble til handlingene/kodene også
           actions: {
-            create: input.selectedKodeIds.map((kodeId) => ({
-              kode: { connect: { id: kodeId } },
+            create: input.selectedKodeIds.map((id) => ({
+              kodeId: id,
             })),
           },
         },
