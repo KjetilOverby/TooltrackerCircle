@@ -241,7 +241,7 @@ export const settingsRouter = createTRPCRouter({
 
   // SERVICE KODER
 
-  create: protectedProcedure
+  createCode: protectedProcedure
     .input(
       z.object({
         code: z.string().min(1, "Kode er påkrevd (f.eks. SERV 402)"),
@@ -273,6 +273,18 @@ export const settingsRouter = createTRPCRouter({
         },
       });
     }),
+
+    updateCode: protectedProcedure
+  .input(z.object({ id: z.string(), code: z.string(), name: z.string() }))
+  .mutation(async ({ ctx, input }) => {
+    return ctx.db.serviceKode.update({
+      where: { id: input.id },
+      data: { 
+        code: input.code.trim(), 
+        name: input.name.trim() 
+      },
+    });
+  }),
 
 
 });

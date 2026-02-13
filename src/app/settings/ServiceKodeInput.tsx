@@ -1,49 +1,100 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
 
-export default function ServiceKodeInput() {
+interface ServiceKode {
+  id: string;
+  code: string;
+  name: string;
+}
+
+interface Props {
+  editingItem?: ServiceKode;
+}
+
+export default function ServiceKodeInput({ editingItem }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
 
   const utils = api.useUtils();
 
-  const createMutation = api.settings.create.useMutation({
-    onSuccess: async () => {
-      // Oppdaterer listen over servicekoder hvis du har en slik query
-      await utils.settings.getAllCodes.invalidate();
-
-      // Nullstill skjema og lukk modal
+  // Synkroniser state med editingItem når modalen åpnes for redigering
+  useEffect(() => {
+    if (editingItem && isOpen) {
+      setCode(editingItem.code);
+      setName(editingItem.name);
+    } else if (!editingItem && isOpen) {
       setCode("");
       setName("");
-      setIsOpen(false);
+    }
+  }, [editingItem, isOpen]);
+
+  // Mutasjon for å opprette
+  const createMutation = api.settings.createCode.useMutation({
+    onSuccess: async () => {
+      await utils.settings.getAllCodes.invalidate();
+      closeModal();
     },
   });
+
+  // Mutasjon for å oppdatere
+  const updateMutation = api.settings.updateCode.useMutation({
+    onSuccess: async () => {
+      await utils.settings.getAllCodes.invalidate();
+      closeModal();
+    },
+  });
+
+  const closeModal = () => {
+    setIsOpen(false);
+    if (!editingItem) {
+      setCode("");
+      setName("");
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!code || !name) return alert("Vennligst fyll ut alle felt");
 
-    createMutation.mutate({
-      code: code.trim(),
-      name: name.trim(),
-    });
+    if (editingItem) {
+      updateMutation.mutate({
+        id: editingItem.id,
+        code: code.trim(),
+        name: name.trim(),
+      });
+    } else {
+      createMutation.mutate({
+        code: code.trim(),
+        name: name.trim(),
+      });
+    }
   };
+
+  const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
     <>
-      <button className="open-btn" onClick={() => setIsOpen(true)}>
-        + Ny Servicekode
-      </button>
+      {editingItem ? (
+        <button className="edit-link-btn" onClick={() => setIsOpen(true)}>
+          Rediger
+        </button>
+      ) : (
+        <button className="open-btn" onClick={() => setIsOpen(true)}>
+          + Ny Servicekode
+        </button>
+      )}
 
       {isOpen && (
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-header">
-              <h2>Opprett ny servicekode</h2>
-              <button className="close-x" onClick={() => setIsOpen(false)}>
+              <h2>
+                {editingItem ? "Rediger servicekode" : "Opprett ny servicekode"}
+              </h2>
+              <button className="close-x" onClick={closeModal}>
                 &times;
               </button>
             </div>
@@ -75,16 +126,12 @@ export default function ServiceKodeInput() {
                 <button
                   type="button"
                   className="cancel-btn"
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeModal}
                 >
                   Avbryt
                 </button>
-                <button
-                  type="submit"
-                  className="save-btn"
-                  disabled={createMutation.isPending}
-                >
-                  {createMutation.isPending ? "Lagrer..." : "Lagre"}
+                <button type="submit" className="save-btn" disabled={isPending}>
+                  {isPending ? "Lagrer..." : editingItem ? "Oppdater" : "Lagre"}
                 </button>
               </div>
             </form>
@@ -92,7 +139,7 @@ export default function ServiceKodeInput() {
         </div>
       )}
 
-      <style>{`
+      <style jsx>{`
         .open-btn {
           background-color: #0f172a;
           color: white;
@@ -103,6 +150,22 @@ export default function ServiceKodeInput() {
           font-weight: 500;
         }
 
+        .edit-link-btn {
+          background: #f1f5f9;
+          color: #2563eb;
+          border: none;
+          padding: 6px 12px;
+          border-radius: 4px;
+          font-size: 0.85rem;
+          cursor: pointer;
+          font-weight: 500;
+          transition: background 0.2s;
+        }
+
+        .edit-link-btn:hover {
+          background: #e2e8f0;
+        }
+
         .modal-overlay {
           position: fixed;
           inset: 0;
@@ -110,7 +173,7 @@ export default function ServiceKodeInput() {
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 50;
+          z-index: 999;
         }
 
         .modal-content {
@@ -119,7 +182,7 @@ export default function ServiceKodeInput() {
           border-radius: 12px;
           width: 100%;
           max-width: 400px;
-          box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
 
         .modal-header {
@@ -129,14 +192,19 @@ export default function ServiceKodeInput() {
           margin-bottom: 20px;
         }
 
-        .modal-header h2 { margin: 0; font-size: 1.1rem; color: #1e293b; }
+        .modal-header h2 {
+          margin: 0;
+          font-size: 1.1rem;
+          color: #1e293b;
+        }
 
         .close-x {
           background: none;
           border: none;
-          font-size: 20px;
+          font-size: 24px;
           cursor: pointer;
           color: #94a3b8;
+          line-height: 1;
         }
 
         .input-group {
@@ -157,6 +225,7 @@ export default function ServiceKodeInput() {
           border: 1px solid #e2e8f0;
           border-radius: 6px;
           font-size: 0.95rem;
+          box-sizing: border-box;
         }
 
         .modal-actions {
@@ -173,6 +242,7 @@ export default function ServiceKodeInput() {
           border-radius: 6px;
           cursor: pointer;
           color: #475569;
+          font-weight: 500;
         }
 
         .save-btn {
