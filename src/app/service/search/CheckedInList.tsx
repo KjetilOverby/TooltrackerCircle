@@ -15,6 +15,32 @@ const getTimeDistance = (date: Date) => {
   return `${diffInDays}d`;
 };
 
+const formatFullDate = (date: Date) => {
+  const d = new Date(date);
+  const dag = d.getDate().toString().padStart(2, "0");
+  const måneder = [
+    "jan",
+    "feb",
+    "mar",
+    "apr",
+    "mai",
+    "jun",
+    "jul",
+    "aug",
+    "sep",
+    "okt",
+    "nov",
+    "des",
+  ];
+  const måned = måneder[d.getMonth()];
+  const klokke = d.toLocaleTimeString("no-NO", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return `${dag}. ${måned}. ${klokke}`;
+};
+
 export default function CheckedInList({
   onSelect,
 }: {
@@ -48,7 +74,8 @@ export default function CheckedInList({
               <th>Serienummer</th>
               <th>Type</th>
               <th>Oppdrag</th>
-              <th>Inne i</th>
+              <th>Varighet</th>
+              <th>Innsjekket</th>
             </tr>
           </thead>
           <tbody>
@@ -69,6 +96,9 @@ export default function CheckedInList({
                 </td>
                 <td className="time-cell">
                   {getTimeDistance(new Date(service.datoInn))}
+                </td>
+                <td className="date-cell">
+                  {formatFullDate(new Date(service.datoInn))}
                 </td>
               </tr>
             ))}

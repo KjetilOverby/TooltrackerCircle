@@ -32,7 +32,7 @@ const ServiceHistorikk = ({ blade, setSelectedServiceForCheckout }: Props) => {
           return (
             <div
               key={s.id}
-              className={`flow-card ${isActive ? "is-active" : ""}`}
+              className={`flow-card ${isActive ? "is-active" : "finished"}`}
             >
               {/* VENSTRE: Nummer og linje */}
               <div className="flow-sidebar">
@@ -125,9 +125,12 @@ const ServiceHistorikk = ({ blade, setSelectedServiceForCheckout }: Props) => {
 
       <style jsx>{`
         .history-wrapper {
-          max-width: 900px;
+          max-width: 1400px;
           margin: 0 auto;
           padding: 20px;
+          background: white;
+          border-radius: 16px;
+          margin: 40px 0;
         }
         .header-flex {
           display: flex;
@@ -180,6 +183,7 @@ const ServiceHistorikk = ({ blade, setSelectedServiceForCheckout }: Props) => {
           border: 2px solid #e2e8f0;
           z-index: 2;
         }
+
         .is-active .step-number {
           background: #3b82f6;
           color: white;
@@ -210,6 +214,13 @@ const ServiceHistorikk = ({ blade, setSelectedServiceForCheckout }: Props) => {
         .is-active .main-card {
           border-left: 5px solid #3b82f6;
           background: #f8faff;
+        }
+        .finished {
+          color: white;
+          border-color: #3b82f6;
+        }
+        .finished .main-card {
+          border-left: 5px solid #48d1cc;
         }
 
         .card-header {
@@ -290,7 +301,7 @@ const ServiceHistorikk = ({ blade, setSelectedServiceForCheckout }: Props) => {
           margin-bottom: 10px;
         }
         .action-tag {
-          background: #1e293b;
+          background: #4682b4;
           color: white;
           padding: 3px 8px;
           border-radius: 4px;
