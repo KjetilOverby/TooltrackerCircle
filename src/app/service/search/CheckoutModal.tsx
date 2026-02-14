@@ -30,18 +30,13 @@ const CheckoutModal = ({
   // Henter verdiene som ble satt ved innsjekk
   const isReklamasjon = service?.serviceType === "Reklamasjon";
   const isTannslipp = service?.feilkode === "Tannslipp";
+  const isRepair = service?.serviceType === "Reparasjon";
 
   const handleToggleKode = (id: string) => {
     setSelectedKodeIds((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
-
-  // Sjekker om "Reparasjon" er valgt i lista over utført arbeid
-  const hasRepairSelected = selectedKodeIds.some((id) => {
-    const kode = serviceKoder.find((k) => k.id === id);
-    return kode?.name.toLowerCase().includes("reparasjon");
-  });
 
   return (
     <div className="modal-overlay">
@@ -93,7 +88,7 @@ const CheckoutModal = ({
 
           <div className="stats-row">
             {/* Viser antall reparasjon hvis "Reparasjon" er krysset av i lista */}
-            {hasRepairSelected && (
+            {isRepair && (
               <div className="input-field">
                 <label>Antall reparerte tenner</label>
                 <input

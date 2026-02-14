@@ -12,329 +12,334 @@ interface Props {
 }
 
 const ServiceHistorikk = ({ blade, setSelectedServiceForCheckout }: Props) => {
+  // Sorterer slik at nyeste service er øverst, men beholder nummerering basert på totalen
+  const sortedServices = [...blade.services].sort(
+    (a, b) => new Date(b.datoInn).getTime() - new Date(a.datoInn).getTime(),
+  );
+
   return (
-    <div className="component-container">
-      <section className="data-section">
-        <h2 className="section-title">Servicehistorikk</h2>
-        <div className="table-wrapper">
-          <table className="pro-table">
-            <thead>
-              <tr>
-                <th>Type</th>
-                <th>Status</th>
-                <th>Loggført</th>
-                <th className="text-right">Handling</th>
-              </tr>
-            </thead>
-            <tbody>
-              {blade.services.map((s) => (
-                <React.Fragment key={s.id}>
-                  <tr className={`main-row ${!s.datoUt ? "is-active" : ""}`}>
-                    <td>
-                      <div className="type-column">
-                        <span className="type-text">{s.serviceType}</span>
-                        <span className="type-subtext">{s.feilkode}</span>
-                        {s.note && (
-                          <span className="customer-note-preview">
-                            💬 {s.note}
-                          </span>
-                        )}
+    <div className="history-wrapper">
+      <div className="header-flex">
+        <h2 className="glam-title">Servicehistorikk</h2>
+        <span className="count-badge">{blade.services.length} totalt</span>
+      </div>
+
+      <div className="flow-container">
+        {sortedServices.map((s, index) => {
+          const serviceNumber = blade.services.length - index;
+          const isActive = !s.datoUt;
+
+          return (
+            <div
+              key={s.id}
+              className={`flow-card ${isActive ? "is-active" : ""}`}
+            >
+              {/* VENSTRE: Nummer og linje */}
+              <div className="flow-sidebar">
+                <div className="step-number">{serviceNumber}</div>
+                <div className="line"></div>
+              </div>
+
+              {/* HØYRE: Innholdet */}
+              <div className="flow-main">
+                <div className="main-card">
+                  <div className="card-header">
+                    <div className="type-meta">
+                      <span className="date-tag">
+                        {new Date(s.datoInn).toLocaleDateString("no-NO", {
+                          day: "2-digit",
+                          month: "long",
+                          year: "numeric",
+                        })}
+                      </span>
+                      <h3 className="service-title">{s.serviceType}</h3>
+                    </div>
+                    {isActive ? (
+                      <button
+                        className="btn-complete"
+                        onClick={() => setSelectedServiceForCheckout(s)}
+                      >
+                        Fullfør service
+                      </button>
+                    ) : (
+                      <div className="status-completed">
+                        ✓ Utlevert{" "}
+                        {new Date(s.datoUt!).toLocaleDateString("no-NO")}
                       </div>
-                    </td>
-                    <td>
-                      {s.datoUt ? (
-                        <span className="status-pill completed">Ferdig</span>
-                      ) : (
-                        <span className="status-pill pending">På verksted</span>
-                      )}
-                    </td>
-                    <td className="date-text">
-                      {new Date(s.datoInn).toLocaleDateString("no-NO")}
-                    </td>
-                    <td className="text-right">
-                      {!s.datoUt ? (
-                        <button
-                          className="btn-action"
-                          onClick={() => setSelectedServiceForCheckout(s)}
-                        >
-                          Fullfør
-                        </button>
-                      ) : (
-                        <span className="date-done">
-                          {new Date(s.datoUt).toLocaleDateString("no-NO")}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
+                    )}
+                  </div>
 
-                  {/* DEN KULE DETALJ-RADEN */}
-                  {s.datoUt && (
-                    <tr className="expanded-row">
-                      <td colSpan={4}>
-                        <div className="timeline-detail">
-                          <div className="detail-grid">
-                            {/* Venstre: Utførte handlinger */}
-                            <div className="detail-section">
-                              <label>Utførte handlinger</label>
-                              <div className="action-cloud">
-                                {s.actions?.map((a) => (
-                                  <span key={a.id} className="modern-badge">
-                                    {a.kode?.code}
-                                  </span>
-                                ))}
-                                {s.antRep > 0 && (
-                                  <span className="stat-tag rep">
-                                    +{s.antRep} Rep
-                                  </span>
-                                )}
-                                {s.antTannslipp > 0 && (
-                                  <span className="stat-tag error">
-                                    ! {s.antTannslipp} Tannslipp
-                                  </span>
-                                )}
-                              </div>
-                            </div>
+                  <div className="grid-details">
+                    {/* SEKSJON 1: INNLEVERING (Check-In) */}
+                    <div className="detail-box in">
+                      <label className="box-label">
+                        Mottatt kontroll (Check-in)
+                      </label>
+                      <div className="box-content">
+                        {s.feilkode && (
+                          <span className="error-pill">{s.feilkode}</span>
+                        )}
+                        <p className="note-text">
+                          {s.note ?? "Standard vedlikehold registrert."}
+                        </p>
+                      </div>
+                    </div>
 
-                            {/* Høyre: Sliperens kommentar i en "bubble" */}
-                            <div className="detail-section">
-                              <label>Leverandørens tilbakemelding</label>
-                              <div className="supplier-bubble">
-                                {s.noteSupplier ||
-                                  "Ingen spesifisert kommentar fra leverandør."}
-                              </div>
-                            </div>
+                    {/* SEKSJON 2: UTFØRT ARBEID (Check-Out) */}
+                    {s.datoUt && (
+                      <div className="detail-box out">
+                        <label className="box-label">
+                          Utført på verksted (Check-out)
+                        </label>
+                        <div className="box-content">
+                          <div className="action-row">
+                            {s.actions?.map((a) => (
+                              <span key={a.id} className="action-tag">
+                                {a.kode?.code}
+                              </span>
+                            ))}
+                            {s.antRep > 0 && (
+                              <span className="stat-tag rep">
+                                +{s.antRep} Rep
+                              </span>
+                            )}
+                            {s.antTannslipp > 0 && (
+                              <span className="stat-tag ts">
+                                ! {s.antTannslipp} Tannslipp
+                              </span>
+                            )}
+                          </div>
+                          <div className="supplier-comment-box">
+                            {s.noteSupplier ?? "Ingen merknad fra sliper."}
                           </div>
                         </div>
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
       <style jsx>{`
-        .data-section {
+        .history-wrapper {
+          max-width: 900px;
+          margin: 0 auto;
+          padding: 20px;
+        }
+        .header-flex {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 40px;
+        }
+        .glam-title {
+          font-size: 1.75rem;
+          font-weight: 900;
+          color: #0f172a;
+          letter-spacing: -0.03em;
+        }
+        .count-badge {
+          background: #e2e8f0;
+          color: #475569;
+          padding: 6px 14px;
+          border-radius: 99px;
+          font-weight: 800;
+          font-size: 0.8rem;
+        }
+
+        .flow-container {
+          display: flex;
+          flex-direction: column;
+        }
+        .flow-card {
+          display: flex;
+          gap: 24px;
+        }
+
+        /* Tidslinje-grafikk */
+        .flow-sidebar {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          width: 40px;
+        }
+        .step-number {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          background: #f1f5f9;
+          color: #64748b;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.9rem;
+          font-weight: 900;
+          border: 2px solid #e2e8f0;
+          z-index: 2;
+        }
+        .is-active .step-number {
+          background: #3b82f6;
+          color: white;
+          border-color: #3b82f6;
+        }
+        .line {
+          width: 2px;
+          flex-grow: 1;
+          background: #e2e8f0;
+          margin: 4px 0;
+        }
+        .flow-card:last-child .line {
+          display: none;
+        }
+
+        /* Kortet */
+        .flow-main {
+          flex-grow: 1;
+          padding-bottom: 40px;
+        }
+        .main-card {
           background: white;
           border-radius: 20px;
           padding: 24px;
-          border: 1px solid #eef2f6;
-          box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+        }
+        .is-active .main-card {
+          border-left: 5px solid #3b82f6;
+          background: #f8faff;
         }
 
-        .section-title {
-          font-size: 1.2rem;
-          font-weight: 800;
-          color: #1e293b;
-          margin-bottom: 20px;
+        .card-header {
           display: flex;
-          align-items: center;
-          gap: 10px;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 24px;
         }
-
-        .pro-table {
-          width: 100%;
-          border-collapse: separate;
-          border-spacing: 0 4px;
-        }
-
-        .pro-table th {
-          padding: 12px 16px;
-          font-size: 0.7rem;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          color: #94a3b8;
-          text-align: left;
-        }
-
-        /* Hovedrader */
-        .main-row td {
-          padding: 16px;
-          background: #ffffff;
-          border-top: 1px solid #f1f5f9;
-          border-bottom: 1px solid #f1f5f9;
-        }
-        .main-row td:first-child {
-          border-left: 1px solid #f1f5f9;
-          border-top-left-radius: 12px;
-          border-bottom-left-radius: 12px;
-        }
-        .main-row td:last-child {
-          border-right: 1px solid #f1f5f9;
-          border-top-right-radius: 12px;
-          border-bottom-right-radius: 12px;
-        }
-
-        .is-active td {
-          background: #fffdf5;
-          border-color: #fef3c7;
-        }
-
-        .type-column {
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
-        }
-        .type-text {
-          font-weight: 700;
-          color: #334155;
-          font-size: 0.95rem;
-        }
-        .type-subtext {
-          font-weight: 400;
-          color: #334155;
-          font-size: 0.7rem;
-        }
-        .customer-note-preview {
-          font-size: 0.8rem;
-          color: #64748b;
-          font-style: italic;
-        }
-
-        /* Statuser */
-        .status-pill {
-          padding: 4px 10px;
-          border-radius: 8px;
+        .date-tag {
           font-size: 0.75rem;
           font-weight: 700;
+          color: #94a3b8;
+          text-transform: uppercase;
         }
-        .status-pill.completed {
-          background: #f0fdf4;
-          color: #16a34a;
-        }
-        .status-pill.pending {
-          background: #fff7ed;
-          color: #c2410c;
-          animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-          0% {
-            opacity: 1;
-          }
-          50% {
-            opacity: 0.6;
-          }
-          100% {
-            opacity: 1;
-          }
+        .service-title {
+          font-size: 1.25rem;
+          font-weight: 900;
+          color: #1e293b;
+          margin: 4px 0;
         }
 
-        /* Detaljer */
-        .expanded-row td {
-          padding: 0 16px 16px 16px;
-        }
-
-        .timeline-detail {
-          background: #f8fafc;
-          padding: 20px;
-          border-radius: 0 0 12px 12px;
-          border: 1px solid #e2e8f0;
-          border-top: none;
-          margin-top: -5px;
-        }
-
-        .detail-grid {
+        .grid-details {
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 30px;
+          grid-template-columns: 1fr;
+          gap: 20px;
         }
 
-        .detail-section label {
-          display: block;
+        @media (min-width: 768px) {
+          .grid-details {
+            grid-template-columns: 1fr 1fr;
+          }
+        }
+
+        .detail-box {
+          background: #f8fafc;
+          border-radius: 12px;
+          padding: 16px;
+          border: 1px solid #f1f5f9;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .out {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+        }
+
+        .box-label {
           font-size: 0.65rem;
           font-weight: 800;
           text-transform: uppercase;
           color: #94a3b8;
-          margin-bottom: 10px;
+          letter-spacing: 0.05em;
         }
 
-        .action-cloud {
+        .error-pill {
+          background: #fee2e2;
+          color: #dc2626;
+          padding: 2px 8px;
+          border-radius: 4px;
+          font-size: 0.7rem;
+          font-weight: 800;
+          display: inline-block;
+          margin-bottom: 8px;
+        }
+
+        .note-text {
+          font-size: 0.9rem;
+          color: #475569;
+          line-height: 1.5;
+          margin: 0;
+        }
+
+        .action-row {
           display: flex;
           flex-wrap: wrap;
           gap: 6px;
+          margin-bottom: 10px;
         }
-
-        .modern-badge {
+        .action-tag {
           background: #1e293b;
           color: white;
-          padding: 4px 10px;
-          border-radius: 6px;
-          font-size: 0.75rem;
+          padding: 3px 8px;
+          border-radius: 4px;
+          font-size: 0.7rem;
           font-weight: 600;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-
         .stat-tag {
-          padding: 4px 10px;
-          border-radius: 6px;
-          font-size: 0.75rem;
-          font-weight: 700;
+          padding: 3px 8px;
+          border-radius: 4px;
+          font-size: 0.7rem;
+          font-weight: 800;
         }
         .stat-tag.rep {
           background: #dcfce7;
-          color: #15803d;
-          border: 1px solid #bbf7d0;
+          color: #166534;
         }
-        .stat-tag.error {
-          background: #fee2e2;
-          color: #dc2626;
-          border: 1px solid #fecaca;
+        .stat-tag.ts {
+          background: #fff7ed;
+          color: #9a3412;
+          border: 1px solid #ffedd5;
         }
 
-        /* Kommentarboblen */
-        .supplier-bubble {
-          background: white;
-          padding: 12px 16px;
-          border-radius: 12px;
-          border: 1px solid #e2e8f0;
-          font-size: 0.85rem;
-          color: #475569;
-          position: relative;
+        .supplier-comment-box {
+          font-size: 0.9rem;
+          color: #1e293b;
           line-height: 1.5;
+          background: #f1f5f9;
+          padding: 10px;
+          border-radius: 8px;
+          border-left: 3px solid #cbd5e1;
         }
 
-        .supplier-bubble::before {
-          content: "";
-          position: absolute;
-          left: -6px;
-          top: 15px;
-          width: 10px;
-          height: 10px;
-          background: white;
-          border-left: 1px solid #e2e8f0;
-          border-bottom: 1px solid #e2e8f0;
-          transform: rotate(45deg);
-        }
-
-        .btn-action {
+        .btn-complete {
           background: #0f172a;
           color: white;
           border: none;
-          padding: 8px 16px;
-          border-radius: 8px;
+          padding: 10px 18px;
+          border-radius: 10px;
           font-weight: 700;
-          font-size: 0.8rem;
           cursor: pointer;
           transition: all 0.2s;
         }
-        .btn-action:hover {
+        .btn-complete:hover {
+          background: #3b82f6;
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
-
-        .text-right {
-          text-align: right;
-        }
-        .date-text {
-          color: #64748b;
-          font-size: 0.85rem;
-        }
-        .date-done {
+        .status-completed {
           color: #16a34a;
-          font-weight: 700;
+          font-weight: 800;
           font-size: 0.85rem;
         }
       `}</style>
