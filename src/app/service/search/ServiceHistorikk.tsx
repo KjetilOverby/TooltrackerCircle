@@ -63,7 +63,7 @@ const ServiceHistorikk = ({ blade, setSelectedServiceForCheckout }: Props) => {
                       </button>
                     ) : (
                       <div className="status-completed">
-                        ✓ Utlevert{" "}
+                        ✓ Service utregistrert{" "}
                         {new Date(s.datoUt!).toLocaleDateString("no-NO")}
                       </div>
                     )}
@@ -73,7 +73,7 @@ const ServiceHistorikk = ({ blade, setSelectedServiceForCheckout }: Props) => {
                     {/* SEKSJON 1: INNLEVERING (Check-In) */}
                     <div className="detail-box in">
                       <label className="box-label">
-                        Mottatt kontroll (Check-in)
+                        Registrert servcie (Check-in)
                       </label>
                       <div className="box-content">
                         {s.feilkode && (

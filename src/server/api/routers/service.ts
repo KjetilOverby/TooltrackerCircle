@@ -18,7 +18,7 @@ getByExactIdNummer: protectedProcedure
     const orgId = requireOrgId(ctx.auth.orgId);
 
     return ctx.db.sawBlade.findFirst({
-      where: { orgId, IdNummer: input.idNummer.trim(), deleted: false },
+      where: { orgId, IdNummer: input.idNummer.trim()},
       include: {
         bladeType: true,
         services: { 

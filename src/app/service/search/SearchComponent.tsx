@@ -7,14 +7,19 @@ import CheckoutModal from "./CheckoutModal";
 import DriftsHistorikkComponent from "./DriftsHistorikkComponent";
 import ServiceHistorikk from "./ServiceHistorikk";
 import CheckInModal from "./CheckInModal";
+import CheckedInList from "./CheckedInList";
 
-// Definere typene fra TRPC-outputen for å unngå 'any'
 type BladeData = NonNullable<RouterOutputs["service"]["getByExactIdNummer"]>;
 type ServiceData = BladeData["services"][number];
 
 export default function SearchComponent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // States for sletting
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteReason, setDeleteReason] = useState("Normal slitasje");
+
   const [serviceType, setServiceType] = useState("Sliping");
   const [note, setNote] = useState("");
   const [feilkode, setFeilkode] = useState("");
@@ -23,6 +28,18 @@ export default function SearchComponent() {
     useState<ServiceData | null>(null);
 
   const utils = api.useUtils();
+
+  // Denne funksjonen håndterer klikk fra listen
+  const handleSelectFromList = (idNummer: string) => {
+    setSearchTerm(idNummer);
+    // Vi må bruke en timeout eller useEffect for å sikre at staten
+    // er oppdatert før vi kjører refetch, eller sende id direkte:
+    setTimeout(() => {
+      void refetch();
+      // Scroller opp til søkefeltet/bladet for bedre brukervennlighet
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 10);
+  };
 
   const {
     data: blade,
@@ -35,6 +52,25 @@ export default function SearchComponent() {
 
   const { data: serviceKoder } = api.settings.getAllCodes.useQuery();
 
+  const deleteBlade = api.sawBlade.softDelete.useMutation({
+    onSuccess: async () => {
+      await utils.service.getByExactIdNummer.invalidate({
+        idNummer: searchTerm,
+      });
+      void refetch();
+      setIsDeleteModalOpen(false);
+    },
+  });
+
+  const restoreBlade = api.sawBlade.restore.useMutation({
+    onSuccess: async () => {
+      await utils.service.getByExactIdNummer.invalidate({
+        idNummer: searchTerm,
+      });
+      void refetch();
+    },
+  });
+
   const createService = api.service.create.useMutation({
     onSuccess: async () => {
       await utils.service.getByExactIdNummer.invalidate({
@@ -45,12 +81,6 @@ export default function SearchComponent() {
       setNote("");
     },
   });
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchTerm.trim()) void refetch();
-  };
-
   const handleCreateService = (e: React.FormEvent) => {
     e.preventDefault();
     if (!blade) return;
@@ -61,6 +91,25 @@ export default function SearchComponent() {
       note,
       feilkode: serviceType === "Reklamasjon" ? feilkode : undefined,
     });
+  };
+
+  const handleConfirmDelete = () => {
+    if (!blade) return;
+    deleteBlade.mutate({
+      id: blade.id,
+      deleteReason: deleteReason,
+    });
+  };
+
+  const handleToggleDelete = () => {
+    if (!blade) return;
+    if (blade.deleted) {
+      if (window.confirm(`Vil du gjenopprette blad ${blade.IdNummer}?`)) {
+        restoreBlade.mutate({ id: blade.id });
+      }
+    } else {
+      setIsDeleteModalOpen(true);
+    }
   };
 
   // --- LOGIKK ---
@@ -95,7 +144,13 @@ export default function SearchComponent() {
   return (
     <div className="page-container">
       <div className="search-header">
-        <form onSubmit={handleSearch} className="search-box">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (searchTerm.trim()) void refetch();
+          }}
+          className="search-box"
+        >
           <input
             type="text"
             value={searchTerm}
@@ -110,7 +165,6 @@ export default function SearchComponent() {
 
       {blade && (
         <div className="content-layout animate-fade-in">
-          {/* TOPP-BANNER: Full bredde med status og statistikk */}
           <header className="blade-header-banner">
             <div className={`blade-pro-card wide ${statusClass}`}>
               <div className="card-glass-overlay"></div>
@@ -121,14 +175,19 @@ export default function SearchComponent() {
                     <span className="pulse-dot"></span>
                     {statusLabel}
                   </div>
+                  {/* Elegant visning av årsak ved sletting */}
+                  {isDeleted && blade.deleteReason && (
+                    <div className="delete-reason-badge">
+                      <span className="reason-label">ÅRSAK:</span>
+                      <span className="reason-text">{blade.deleteReason}</span>
+                    </div>
+                  )}
                   <h1 className="serial-number">{blade.IdNummer}</h1>
                   <p className="blade-subtitle">
                     {blade.bladeType?.name || "Standard sagblad"}
-                    {blade.side ? ` • ${blade.side}` : ""}
                   </p>
                 </div>
 
-                {/* Integrert statistikk midt i kortet */}
                 <div className="header-stats">
                   <div className="stat-item">
                     <label>Totalt stokker</label>
@@ -142,21 +201,38 @@ export default function SearchComponent() {
                 </div>
 
                 <div className="header-right">
-                  <button
-                    className="main-action-btn-v2"
-                    onClick={() => setIsModalOpen(true)}
-                    disabled={!!activeService || !!activeInstall || !!isDeleted}
-                  >
-                    {activeService
-                      ? "Allerede på service"
-                      : activeInstall
-                        ? "I drift"
-                        : "+ Registrer service"}
-                  </button>
+                  <div className="action-group">
+                    <button
+                      className="main-action-btn-v2"
+                      onClick={() => setIsModalOpen(true)}
+                      disabled={
+                        !!activeService || !!activeInstall || !!isDeleted
+                      }
+                    >
+                      {activeService
+                        ? "På service"
+                        : activeInstall
+                          ? "I drift"
+                          : "+ Service"}
+                    </button>
+
+                    <button
+                      className={
+                        isDeleted ? "restore-action-btn" : "delete-action-btn"
+                      }
+                      onClick={handleToggleDelete}
+                      disabled={
+                        deleteBlade.isPending ||
+                        restoreBlade.isPending ||
+                        (!!activeInstall && !isDeleted)
+                      }
+                    >
+                      {isDeleted ? "Gjenopprett" : "Kasser"}
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              {/* Info-detaljer som en stripe nederst */}
               <div className="card-footer-details">
                 <div className="footer-item">
                   <label>Produsent:</label>{" "}
@@ -169,13 +245,7 @@ export default function SearchComponent() {
                   <label>Registrert:</label>
                   <span>
                     {blade.createdAt
-                      ? new Date(blade.createdAt).toLocaleString("no-NO", {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
+                      ? new Date(blade.createdAt).toLocaleDateString("no-NO")
                       : "—"}
                   </span>
                 </div>
@@ -193,6 +263,56 @@ export default function SearchComponent() {
         </div>
       )}
 
+      {/* KASSERING MODAL */}
+      {isDeleteModalOpen && (
+        <div className="modal-overlay">
+          <div className="modal-content small">
+            <h3>Kasser blad {blade?.IdNummer}</h3>
+
+            {/* Dynamisk advarsel om aktiv service */}
+            {activeService ? (
+              <div className="service-warning">
+                <strong>OBS!</strong> Dette bladet er sjekket inn til service.
+                Ved kassering vil den aktive innsjekken bli slettet.
+              </div>
+            ) : (
+              <p>Vennligst oppgi årsak til kassering:</p>
+            )}
+
+            <div className="input-group">
+              <label>Årsak</label>
+              <select
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                className="modal-select"
+              >
+                <option value="Normal slitasje">Normal slitasje</option>
+                <option value="Havari">Havari</option>
+                <option value="Varmekjørt">Varmekjørt</option>
+                <option value="Dårlig stamme">Dårlig stamme</option>
+              </select>
+            </div>
+
+            <div className="modal-actions">
+              <button
+                onClick={() => setIsDeleteModalOpen(false)}
+                className="cancel-btn"
+              >
+                Avbryt
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                className="confirm-delete-btn"
+                disabled={deleteBlade.isPending}
+              >
+                {deleteBlade.isPending ? "Kasserer..." : "Bekreft kassering"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Andre modaler (CheckIn/Checkout) beholdes som før */}
       {isModalOpen && blade && (
         <CheckInModal
           blade={blade}
@@ -221,17 +341,156 @@ export default function SearchComponent() {
         />
       )}
 
+      <div className="mt-12">
+        <CheckedInList onSelect={handleSelectFromList} />
+      </div>
+
       <style jsx>{`
+        .service-warning {
+          background: #fff7ed;
+          border: 1px solid #ffedd5;
+          color: #9a3412;
+          padding: 12px;
+          border-radius: 12px;
+          font-size: 13px;
+          line-height: 1.5;
+          margin-bottom: 20px;
+        }
+
+        .service-warning strong {
+          color: #ea580c;
+          display: block;
+          margin-bottom: 2px;
+        }
+        .delete-reason-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(0, 0, 0, 0.3);
+          backdrop-filter: blur(8px);
+          padding: 4px 12px;
+          border-radius: 8px;
+          margin-bottom: 10px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          animation: slideIn 0.3s ease-out;
+        }
+
+        .reason-label {
+          font-size: 10px;
+          font-weight: 800;
+          color: rgba(255, 255, 255, 0.6);
+          letter-spacing: 0.05em;
+        }
+
+        .reason-text {
+          font-size: 13px;
+          font-weight: 700;
+          color: #ffffff;
+        }
+
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateX(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        .modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.6);
+          backdrop-filter: blur(4px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+
+        .modal-content.small {
+          background: white;
+          padding: 30px;
+          border-radius: 24px;
+          width: 100%;
+          max-width: 400px;
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content h3 {
+          margin-top: 0;
+          font-size: 20px;
+          color: #0f172a;
+        }
+        .modal-content p {
+          color: #64748b;
+          font-size: 14px;
+          margin-bottom: 20px;
+        }
+
+        .input-group {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          margin-bottom: 25px;
+        }
+        .input-group label {
+          font-size: 12px;
+          font-weight: 700;
+          text-transform: uppercase;
+          color: #94a3b8;
+        }
+
+        .modal-select {
+          padding: 12px;
+          border-radius: 12px;
+          border: 1px solid #e2e8f0;
+          background: #f8fafc;
+          font-size: 15px;
+          font-weight: 500;
+          outline: none;
+        }
+
+        .modal-actions {
+          display: flex;
+          gap: 12px;
+        }
+        .modal-actions button {
+          flex: 1;
+          padding: 12px;
+          border-radius: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          border: none;
+          transition: all 0.2s;
+        }
+
+        .cancel-btn {
+          background: #f1f5f9;
+          color: #64748b;
+        }
+        .cancel-btn:hover {
+          background: #e2e8f0;
+        }
+
+        .confirm-delete-btn {
+          background: #ef4444;
+          color: white;
+        }
+        .confirm-delete-btn:hover {
+          background: #dc2626;
+          transform: translateY(-2px);
+        }
         .page-container {
           max-width: 1400px;
           margin: 0 auto;
           padding: 40px 20px;
           color: #1e293b;
-          background: #f8fafc;
           min-height: 100vh;
-          font-family: "Inter", system-ui, sans-serif;
+          font-family: "Inter", sans-serif;
         }
-
         .search-box {
           display: flex;
           gap: 12px;
@@ -266,8 +525,6 @@ export default function SearchComponent() {
           flex-direction: column;
           gap: 30px;
         }
-
-        /* --- WIDE PRO CARD --- */
         .blade-pro-card.wide {
           position: relative;
           border-radius: 30px;
@@ -276,7 +533,6 @@ export default function SearchComponent() {
           box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
           border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         .card-main-content {
           display: grid;
           grid-template-columns: 1fr auto 1fr;
@@ -287,9 +543,24 @@ export default function SearchComponent() {
           gap: 30px;
         }
 
-        .header-left { display: flex; flex-direction: column; align-items: flex-start; }
-        .serial-number { font-size: 56px; font-weight: 900; line-height: 1; margin: 0; letter-spacing: -2px; }
-        .blade-subtitle { opacity: 0.9; font-size: 16px; margin-top: 5px; font-weight: 500; }
+        .header-left {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .serial-number {
+          font-size: 56px;
+          font-weight: 900;
+          line-height: 1;
+          margin: 0;
+          letter-spacing: -2px;
+        }
+        .blade-subtitle {
+          opacity: 0.9;
+          font-size: 16px;
+          margin-top: 5px;
+          font-weight: 500;
+        }
 
         .header-stats {
           display: flex;
@@ -301,25 +572,79 @@ export default function SearchComponent() {
           backdrop-filter: blur(10px);
           border: 1px solid rgba(255, 255, 255, 0.1);
         }
+        .stat-item {
+          text-align: center;
+        }
+        .stat-item label {
+          display: block;
+          font-size: 10px;
+          text-transform: uppercase;
+          font-weight: 800;
+          opacity: 0.7;
+          margin-bottom: 4px;
+        }
+        .stat-item .value {
+          font-size: 28px;
+          font-weight: 900;
+        }
+        .stat-divider {
+          width: 1px;
+          height: 35px;
+          background: rgba(255, 255, 255, 0.2);
+        }
 
-        .stat-item text-align: center;
-        .stat-item label { display: block; font-size: 10px; text-transform: uppercase; font-weight: 800; opacity: 0.7; margin-bottom: 4px; }
-        .stat-item .value { font-size: 28px; font-weight: 900; }
-        .stat-divider { width: 1px; height: 35px; background: rgba(255, 255, 255, 0.2); }
+        .action-group {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+        }
 
         .main-action-btn-v2 {
           background: white;
           color: #0f172a;
           border: none;
-          padding: 16px 30px;
+          padding: 16px 25px;
           border-radius: 14px;
           font-weight: 800;
           font-size: 14px;
           cursor: pointer;
           transition: all 0.2s;
+          white-space: nowrap;
         }
-        .main-action-btn-v2:hover:not(:disabled) { transform: scale(1.03); }
-        .main-action-btn-v2:disabled { background: rgba(255, 255, 255, 0.2); color: rgba(255, 255, 255, 0.5); cursor: not-allowed; }
+        .main-action-btn-v2:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .delete-action-btn {
+          background: rgba(0, 0, 0, 0.2);
+          color: white;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          padding: 16px 20px;
+          border-radius: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .delete-action-btn:hover:not(:disabled) {
+          background: #ef4444;
+          border-color: transparent;
+        }
+
+        .restore-action-btn {
+          background: white;
+          color: #10b981;
+          border: none;
+          padding: 16px 20px;
+          border-radius: 14px;
+          font-weight: 800;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .restore-action-btn:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
 
         .card-footer-details {
           background: rgba(0, 0, 0, 0.1);
@@ -331,14 +656,39 @@ export default function SearchComponent() {
           position: relative;
           z-index: 2;
         }
+        .footer-item label {
+          opacity: 0.6;
+          margin-right: 5px;
+          font-weight: 600;
+        }
+        .footer-item span {
+          font-weight: 700;
+        }
 
-        .footer-item label { opacity: 0.6; margin-right: 5px; font-weight: 600; }
-        .footer-item span { font-weight: 700; }
+        /* LEDIG / OK - En myk Smaragd/Salvie-grønn */
+        .bg-ok {
+          background: linear-gradient(
+            135deg,
+            #6366f1 0%,
+            #4338ca 100%
+          ); /* Merk: Hvis du vil beholde grønn, bruk koden under */
+          background: linear-gradient(135deg, #2dd4bf 0%, #0d9488 100%);
+        }
 
-        .bg-ok { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
-        .bg-service { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
-        .bg-production { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
-        .bg-deleted { background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); }
+        /* PÅ SERVICE - En varm, nedtonet rav-farge */
+        .bg-service {
+          background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+        }
+
+        /* I DRIFT - En profesjonell stål-blå */
+        .bg-production {
+          background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+        }
+
+        /* KASSERT - En dempet, elegant dyp rød/vin-farge */
+        .bg-deleted {
+          background: linear-gradient(135deg, #f87171 0%, #991b1b 100%);
+        }
 
         .status-indicator {
           display: inline-flex;
@@ -351,7 +701,6 @@ export default function SearchComponent() {
           font-weight: 900;
           margin-bottom: 15px;
         }
-
         .pulse-dot {
           width: 8px;
           height: 8px;
@@ -361,25 +710,44 @@ export default function SearchComponent() {
         }
 
         @keyframes pulse {
-          0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
-          70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
-          100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+          0% {
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+          }
+          70% {
+            box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+          }
+          100% {
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+          }
         }
-
         .card-glass-overlay {
           position: absolute;
           inset: 0;
-          background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%);
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.1) 0%,
+            rgba(0, 0, 0, 0.1) 100%
+          );
           pointer-events: none;
         }
+        .animate-fade-in {
+          animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(15px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
 
-        .animate-fade-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-
-        @media (max-width: 1100px) {
-          .card-main-content { grid-template-columns: 1fr; text-align: center; }
-          .header-left, .header-right { align-items: center; justify-content: center; }
-          .header-stats { justify-content: center; }
+        button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          transform: none !important;
         }
       `}</style>
     </div>

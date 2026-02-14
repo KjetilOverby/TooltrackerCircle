@@ -136,7 +136,7 @@ export const sawBladeRouter = createTRPCRouter({
       });
     }),
 
-  softDelete: protectedProcedure
+    softDelete: protectedProcedure
     .input(
       z.object({
         id: z.string().min(1),
@@ -145,19 +145,36 @@ export const sawBladeRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const orgId = requireOrgId(ctx.auth.orgId);
-
+  
+      // 1. Sjekk eksistens først
       const existing = await ctx.db.sawBlade.findFirst({
         where: { id: input.id, orgId },
         select: { id: true },
       });
-      if (!existing) throw new Error("Fant ikke sagbladet i denne organisasjonen");
-
-      return ctx.db.sawBlade.update({
-        where: { id: input.id },
-        data: {
-          deleted: true,
-          deleteReason: input.deleteReason?.trim() ?? null,
-        },
+      
+      if (!existing) {
+        throw new Error("Fant ikke sagbladet i denne organisasjonen");
+      }
+  
+      return await ctx.db.$transaction(async (tx) => {
+        // 2. Slett den aktive servicen hvis den finnes
+        // Vi bruker deleteMany her kun fordi den ikke kaster feil hvis 
+        // det tilfeldigvis ikke finnes en aktiv service (enklere håndtering).
+        await tx.bladeService.deleteMany({
+          where: {
+            bladeId: input.id,
+            datoUt: null,
+          },
+        });
+  
+        // 3. Sett bladet til kassert
+        return await tx.sawBlade.update({
+          where: { id: input.id },
+          data: {
+            deleted: true,
+            deleteReason: input.deleteReason?.trim() ?? null,
+          },
+        });
       });
     }),
 
