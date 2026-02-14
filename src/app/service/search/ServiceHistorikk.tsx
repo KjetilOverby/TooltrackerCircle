@@ -33,6 +33,7 @@ const ServiceHistorikk = ({ blade, setSelectedServiceForCheckout }: Props) => {
                     <td>
                       <div className="type-column">
                         <span className="type-text">{s.serviceType}</span>
+                        <span className="type-subtext">{s.feilkode}</span>
                         {s.note && (
                           <span className="customer-note-preview">
                             💬 {s.note}
@@ -180,6 +181,11 @@ const ServiceHistorikk = ({ blade, setSelectedServiceForCheckout }: Props) => {
           font-weight: 700;
           color: #334155;
           font-size: 0.95rem;
+        }
+        .type-subtext {
+          font-weight: 400;
+          color: #334155;
+          font-size: 0.7rem;
         }
         .customer-note-preview {
           font-size: 0.8rem;

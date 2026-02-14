@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
 
 interface CheckoutModalProps {
-  service: any;
+  service: any; // Her ligger nå serviceType og feilkode fra innsjekk
   bladeIdNummer: string;
   serviceKoder: any[];
   onClose: () => void;
@@ -27,36 +27,21 @@ const CheckoutModal = ({
     onSuccess: () => onSuccess(),
   });
 
+  // Henter verdiene som ble satt ved innsjekk
+  const isReklamasjon = service?.serviceType === "Reklamasjon";
+  const isTannslipp = service?.feilkode === "Tannslipp";
+
   const handleToggleKode = (id: string) => {
     setSelectedKodeIds((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id],
     );
   };
 
-  // Forbedret sjekk: Ser etter "reparasjon" i både navn og kode
-  const hasRepair = selectedKodeIds.some((id) => {
+  // Sjekker om "Reparasjon" er valgt i lista over utført arbeid
+  const hasRepairSelected = selectedKodeIds.some((id) => {
     const kode = serviceKoder.find((k) => k.id === id);
-    if (!kode) return false;
-    const searchStr = `${kode.name} ${kode.code}`.toLowerCase();
-    return searchStr.includes("Reparasjon") || searchStr.includes("Reparasjon");
+    return kode?.name.toLowerCase().includes("reparasjon");
   });
-
-  // Forbedret sjekk: Ser etter "tannslipp" eller "reklamasjon"
-  const hasReklamasjon = selectedKodeIds.some((id) => {
-    const kode = serviceKoder.find((k) => k.id === id);
-    if (!kode) return false;
-    const searchStr = `${kode.name} ${kode.code}`.toLowerCase();
-    return searchStr.includes("Tannslipp") || searchStr.includes("Reklamasjon");
-  });
-
-  // Nullstill antall hvis valget fjernes (valgfritt, men ryddig)
-  useEffect(() => {
-    if (!hasRepair) setAntRep(0);
-  }, [hasRepair]);
-
-  useEffect(() => {
-    if (!hasReklamasjon) setAntTannslipp(0);
-  }, [hasReklamasjon]);
 
   return (
     <div className="modal-overlay">
@@ -74,6 +59,17 @@ const CheckoutModal = ({
         </div>
 
         <div className="modal-body">
+          {/* VISER INFO FRA INNSJEKK HVIS DET ER REKLAMASJON */}
+          {isReklamasjon && (
+            <div className="reklamasjon-info-box">
+              <span className="info-tag">REKLAMASJON</span>
+              <p>
+                Årsak registrert ved innsjekk:{" "}
+                <strong>{service.feilkode}</strong>
+              </p>
+            </div>
+          )}
+
           <div className="input-section">
             <label className="section-label">Hva er utført?</label>
             <div className="scroll-container">
@@ -90,42 +86,40 @@ const CheckoutModal = ({
                   />
                   <span className="kode-pill">{k.code}</span>
                   <span className="kode-label">{k.name}</span>
-                  <div className="custom-check"></div>
                 </label>
               ))}
             </div>
           </div>
 
-          {/* Viser feltene kun hvis de relevante kodene er valgt */}
-          {(hasRepair || hasReklamasjon) && (
-            <div className="stats-row animate-slide-in">
-              {hasRepair && (
-                <div className="input-field">
-                  <label>Antall tenner reparert</label>
-                  <input
-                    type="number"
-                    min="1"
-                    autoFocus
-                    value={antRep || ""}
-                    onChange={(e) => setAntRep(Number(e.target.value))}
-                    placeholder="Eks: 4"
-                  />
-                </div>
-              )}
-              {hasReklamasjon && (
-                <div className="input-field">
-                  <label>Antall tannslipp</label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={antTannslipp || ""}
-                    onChange={(e) => setAntTannslipp(Number(e.target.value))}
-                    placeholder="Eks: 2"
-                  />
-                </div>
-              )}
-            </div>
-          )}
+          <div className="stats-row">
+            {/* Viser antall reparasjon hvis "Reparasjon" er krysset av i lista */}
+            {hasRepairSelected && (
+              <div className="input-field">
+                <label>Antall reparerte tenner</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={antRep || ""}
+                  onChange={(e) => setAntRep(Number(e.target.value))}
+                  placeholder="0"
+                />
+              </div>
+            )}
+
+            {/* Viser antall tannslipp KUN hvis det ble registrert som Tannslipp ved innsjekk */}
+            {isTannslipp && (
+              <div className="input-field highlight-field">
+                <label>Registrer antall tannslipp</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={antTannslipp || ""}
+                  onChange={(e) => setAntTannslipp(Number(e.target.value))}
+                  placeholder="0"
+                />
+              </div>
+            )}
+          </div>
 
           <div className="input-field">
             <label>Sliperens notat</label>
@@ -183,18 +177,6 @@ const CheckoutModal = ({
           border-radius: 24px;
           box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
           overflow: hidden;
-          animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes modalPop {
-          from {
-            opacity: 0;
-            transform: scale(0.95) translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-          }
         }
 
         .modal-header {
@@ -202,19 +184,11 @@ const CheckoutModal = ({
           border-bottom: 1px solid #f1f5f9;
           display: flex;
           justify-content: space-between;
-          align-items: flex-start;
         }
-
         .modal-title {
           font-size: 1.25rem;
           font-weight: 800;
           color: #1e293b;
-          margin: 0;
-        }
-        .modal-subtitle {
-          font-size: 0.9rem;
-          color: #64748b;
-          margin: 4px 0 0 0;
         }
         .close-x {
           background: none;
@@ -231,12 +205,30 @@ const CheckoutModal = ({
           gap: 24px;
         }
 
+        .reklamasjon-info-box {
+          background: #fffbeb;
+          border: 1px solid #fef3c7;
+          padding: 16px;
+          border-radius: 12px;
+          color: #92400e;
+          font-size: 0.9rem;
+        }
+        .info-tag {
+          background: #f59e0b;
+          color: white;
+          font-size: 0.7rem;
+          font-weight: 900;
+          padding: 2px 6px;
+          border-radius: 4px;
+          margin-bottom: 4px;
+          display: inline-block;
+        }
+
         .section-label {
           font-size: 0.75rem;
           font-weight: 800;
           text-transform: uppercase;
           color: #94a3b8;
-          letter-spacing: 0.05em;
           margin-bottom: 12px;
           display: block;
         }
@@ -245,35 +237,23 @@ const CheckoutModal = ({
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 10px;
-          max-height: 240px;
+          max-height: 200px;
           overflow-y: auto;
-          padding-right: 8px;
         }
 
         .choice-card {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          gap: 4px;
           padding: 12px;
           border: 2px solid #f1f5f9;
           border-radius: 12px;
           cursor: pointer;
           transition: all 0.2s;
         }
-
-        .choice-card:hover {
-          border-color: #e2e8f0;
-          background: #f8fafc;
-        }
         .choice-card.selected {
           border-color: #3b82f6;
           background: #eff6ff;
         }
-
         .hidden-check {
-          position: absolute;
-          opacity: 0;
+          display: none;
         }
         .kode-pill {
           background: #1e293b;
@@ -282,31 +262,16 @@ const CheckoutModal = ({
           font-weight: 700;
           padding: 2px 6px;
           border-radius: 4px;
+          display: block;
           width: fit-content;
-        }
-        .kode-label {
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: #334155;
+          margin-bottom: 4px;
         }
 
         .stats-row {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 16px;
-          animation: slideIn 0.3s ease;
         }
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateY(-5px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
         .input-field {
           display: flex;
           flex-direction: column;
@@ -317,21 +282,21 @@ const CheckoutModal = ({
           font-weight: 700;
           color: #475569;
         }
-
         .input-field input,
         .input-field textarea {
           padding: 12px;
           border: 2px solid #f1f5f9;
           border-radius: 12px;
           font-size: 0.95rem;
-          transition: all 0.2s;
         }
-
-        .input-field input:focus,
-        .input-field textarea:focus {
+        .input-field input:focus {
           outline: none;
           border-color: #3b82f6;
-          background: white;
+        }
+
+        .highlight-field input {
+          border-color: #f59e0b;
+          background: #fffbeb;
         }
 
         .modal-actions {
@@ -341,14 +306,12 @@ const CheckoutModal = ({
           justify-content: flex-end;
           gap: 12px;
         }
-
         .btn-cancel {
           background: none;
           border: none;
           font-weight: 700;
           color: #64748b;
           cursor: pointer;
-          padding: 10px 20px;
         }
         .btn-submit {
           background: #0f172a;
@@ -358,16 +321,10 @@ const CheckoutModal = ({
           border-radius: 12px;
           font-weight: 700;
           cursor: pointer;
-          transition: all 0.2s;
         }
-
         .btn-submit:disabled {
           background: #cbd5e1;
           cursor: not-allowed;
-        }
-        .btn-submit:not(:disabled):hover {
-          transform: translateY(-1px);
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
       `}</style>
     </div>
