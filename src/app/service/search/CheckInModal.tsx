@@ -2,6 +2,8 @@
 
 import React from "react";
 import { type RouterOutputs } from "~/trpc/react";
+import servicetyper from "../../../appdata/servicetyper";
+import reklamasjonstyper from "../../../appdata/reklamasjonstyper";
 
 type BladeData = NonNullable<RouterOutputs["service"]["getByExactIdNummer"]>;
 
@@ -62,11 +64,11 @@ const CheckInModal = ({
               value={serviceType}
               onChange={(e) => handleServiceTypeChange(e.target.value)}
             >
-              <option value="Sliping">Sliping</option>
-              <option value="Omlodding">Omlodding</option>
-              <option value="Reparasjon">Reparasjon</option>
-              <option value="Reklamasjon">Reklamasjon</option>
-              <option value="Annet">Annet</option>
+              {servicetyper.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -81,10 +83,11 @@ const CheckInModal = ({
                 required={serviceType === "Reklamasjon"}
               >
                 <option value="">-- Velg årsak --</option>
-                <option value="Tannslipp">Tannslipp</option>
-                <option value="Dårlig lodd">Dårlig lodd</option>
-                <option value="Manglende sideslip">Manglende sideslip</option>
-                <option value="Dårlig retting">Dårlig retting</option>
+                {reklamasjonstyper.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
               </select>
             </div>
           )}

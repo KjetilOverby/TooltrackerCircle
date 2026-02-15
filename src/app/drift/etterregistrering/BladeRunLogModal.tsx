@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import servicetyper from "~/appdata/servicetyper";
+import reklamasjonstyper from "~/appdata/reklamasjonstyper";
 
 // --- TYPER ---
 
@@ -222,7 +224,7 @@ export default function BladeRunLogModal({
 
       // Vis feilmeldingen til brukeren
       const errorMsg =
-        error?.message || "Det oppstod en ukjent feil ved lagring.";
+        error?.message ?? "Det oppstod en ukjent feil ved lagring.";
       setLocalError(`Kunne ikke lagre: ${errorMsg}`);
     }
   };
@@ -259,7 +261,7 @@ export default function BladeRunLogModal({
           </button>
         </div>
 
-        {(localError || error) && (
+        {(localError ?? error) && (
           <div className="alertError">{localError ?? error}</div>
         )}
 
@@ -374,11 +376,11 @@ export default function BladeRunLogModal({
                     }}
                     className="selectInput"
                   >
-                    <option value="Sliping">Sliping</option>
-                    <option value="Omlodding">Omlodding</option>
-                    <option value="Reparasjon">Reparasjon</option>
-                    <option value="Reklamasjon">Reklamasjon</option>
-                    <option value="Annet">Annet</option>
+                    {servicetyper.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
                   </select>
                 </label>
 
@@ -393,11 +395,11 @@ export default function BladeRunLogModal({
                         className="selectInput"
                       >
                         <option value="">-- Velg årsak --</option>
-                        <option value="Tannslipp">Tannslipp</option>
-                        <option value="Dårlig stamme">Dårlig stamme</option>
-                        <option value="Manglende sideslip">
-                          Manglende sideslip
-                        </option>
+                        {reklamasjonstyper.map((type) => (
+                          <option key={type} value={type}>
+                            {type}
+                          </option>
+                        ))}
                       </select>
                     </label>
                   </>

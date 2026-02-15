@@ -250,7 +250,7 @@ const UnmountList: React.FC<Props> = ({
                         fontStyle: "italic",
                       }}
                     >
-                      "{row.removedNote}"
+                      {row.removedNote}
                     </div>
                   )}
                 </div>
