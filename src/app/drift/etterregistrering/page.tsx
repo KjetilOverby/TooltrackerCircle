@@ -125,7 +125,8 @@ const Page = () => {
               sideklaring: input.sideklaring ?? null,
               feilkode: input.feilkode ?? null,
               alt: input.alt ?? null,
-              loggedAt: input.loggedAt, // Viktig hvis du vil lagre tidspunktet fra modalen
+              loggedAt: input.loggedAt,
+              createService: input.createService,
             });
             await recentQuery.refetch();
             setRunLogOpen(false);

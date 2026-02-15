@@ -13,9 +13,9 @@ function formatDuration(ms: number) {
 }
 
 type Props = {
-  rows: RecentInstall[]; // Bruk den automatiske typen
+  rows: RecentInstall[];
   isFetching: boolean;
-  onEdit?: (row: RecentInstall) => void; // Bruk den automatiske typen
+  onEdit?: (row: RecentInstall) => void;
   onDelete?: (row: RecentInstall) => void;
 };
 
@@ -31,176 +31,195 @@ const UnmountList: React.FC<Props> = ({
     <div className="logWrap">
       <style>{`
         .logWrap {
-          background: rgba(30, 41, 59, 0.5);
-          backdrop-filter: blur(8px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
           border-radius: 20px;
           padding: 24px;
-          margin-top: 3rem;
-          color: #f8fafc;
+          margin-top: 2rem;
+          color: #1e293b;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
         .logHeader {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 20px;
-          padding: 0 4px;
+          margin-bottom: 24px;
         }
         .logTitle {
-          font-size: 18px;
+          font-size: 19px;
           font-weight: 800;
-          letter-spacing: -0.02em;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-        .logTitle::before {
-          content: "";
-          width: 4px;
-          height: 18px;
-          background: #3b82f6;
-          border-radius: 4px;
+          color: #0f172a;
         }
         .logList {
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 14px;
         }
         .logItem {
-          background: rgba(15, 23, 42, 0.4);
-          border: 1px solid rgba(255, 255, 255, 0.05);
-          border-radius: 16px;
-          padding: 16px;
+          position: relative;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 12px;
+          padding: 16px 16px 16px 20px; /* Mer padding til venstre for fargestripe */
           display: grid;
-          /* Justert grid for å gi plass til knapper på høyre side */
           grid-template-columns: 1fr auto auto; 
-          gap: 16px;
+          gap: 20px;
           align-items: center;
           transition: all 0.2s ease;
+          overflow: hidden;
         }
+
+        /* VENSTRE FARGEKANT */
+        .logItem::before {
+          content: "";
+          position: absolute;
+          left: 0;
+          top: 0;
+          bottom: 0;
+          width: 6px;
+          transition: width 0.2s ease;
+        }
+
+        /* VARIANT: MANGLER DATA */
+        .logItem.mangler {
+          border-color: #fed7aa;
+          background: #fffcf9;
+        }
+        .logItem.mangler::before {
+          background: #f59e0b;
+        }
+
+        /* VARIANT: OK */
+        .logItem.ok {
+          border-color: #e2e8f0;
+        }
+        .logItem.ok::before {
+          background: #10b981;
+        }
+
         .logItem:hover {
-          background: rgba(15, 23, 42, 0.6);
-          border-color: rgba(59, 130, 246, 0.3);
+          transform: translateX(4px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
+
         .logMain {
           font-size: 15px;
           line-height: 1.4;
         }
         .bladeId {
-          color: #2e665c;
+          color: #2563eb;
           font-weight: 800;
-          background: #5fcfbb;
-          padding: 2px 6px;
+          background: #eff6ff;
+          padding: 2px 8px;
           border-radius: 6px;
         }
         .sawName {
-          color: #f1f5f9;
-          font-weight: 600;
+          color: #1e293b;
+          font-weight: 700;
         }
         .logMeta {
-          margin-top: 8px;
-          font-size: 12px;
-          color: #d9dbdb;
+          margin-top: 10px;
           display: flex;
-          flex-wrap: wrap;
-          gap: 12px;
+          gap: 16px;
           align-items: center;
         }
-        .pill {
-          display: inline-flex;
+        .metaTime {
+          font-size: 13px;
+          font-weight: 600;
+          color: #64748b;
+          display: flex;
           align-items: center;
-          padding: 4px 10px;
-          border-radius: 8px;
-          font-size: 11px;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.03em;
+          gap: 6px;
         }
-        .pillReason { background: rgba(255, 255, 255, 0.1); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.1); }
-        .pillWarn { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
-        .pillOk { background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.2); }
-        
+
         .statusSide {
           display: flex;
           flex-direction: column;
           align-items: flex-end;
-          gap: 6px;
-          min-width: 100px;
+          gap: 8px;
         }
-        .durationBox {
-          font-size: 13px;
+        .durationBadge {
+          font-size: 12px;
           font-weight: 700;
-          color: #fff;
-          background: rgba(255, 255, 255, 0.05);
-          padding: 4px 8px;
+          color: #64748b;
+          background: #f1f5f9;
+          padding: 3px 8px;
           border-radius: 6px;
         }
 
-        /* --- NYE KNAPP-STILER --- */
+        .pillStatus {
+          font-size: 11px;
+          font-weight: 800;
+          padding: 4px 10px;
+          border-radius: 20px;
+          text-transform: uppercase;
+        }
+        .pillStatus.warn { background: #fff7ed; color: #c2410c; border: 1px solid #ffedd5; }
+        .pillStatus.ok { background: #f0fdf4; color: #15803d; border: 1px solid #dcfce7; }
+
         .actionButtons {
           display: flex;
-          gap: 8px;
-          padding-left: 12px;
-          border-left: 1px solid rgba(255, 255, 255, 0.1);
+          gap: 6px;
+          padding-left: 16px;
+          border-left: 1px solid #e2e8f0;
         }
-        .btnAction {
+        .btnSmall {
           cursor: pointer;
-          border: none;
+          border: 1px solid #e2e8f0;
           border-radius: 8px;
           padding: 8px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: all 0.2s ease;
-          color: #cbd5e1;
-          background: rgba(255, 255, 255, 0.05);
+          background: white;
+          color: #94a3b8;
+          transition: all 0.2s;
         }
-        .btnEdit:hover {
-          background: rgba(59, 130, 246, 0.2);
-          color: #60a5fa;
-        }
-        .btnDelete:hover {
-          background: rgba(239, 68, 68, 0.2);
-          color: #f87171;
-        }
-        /* ----------------------- */
+        .btnSmall:hover { background: #f8fafc; color: #1e293b; }
+        .btnDelete:hover { border-color: #fecaca; color: #dc2626; background: #fef2f2; }
 
         .isFetching {
-          animation: pulse 1.5s infinite;
-          font-size: 12px;
-          color: #3b82f6;
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
+          font-size: 13px;
+          font-weight: 700;
+          color: #2563eb;
+          background: #eff6ff;
+          padding: 4px 12px;
+          border-radius: 20px;
         }
       `}</style>
 
       <div className="logHeader">
         <div className="logTitle">Siste demonteringer</div>
-
-        {isFetching && <div className="isFetching">Oppdaterer logg...</div>}
+        {isFetching && <div className="isFetching">🔄 Oppdaterer...</div>}
       </div>
 
       <div className="logList">
         {rows.map((row) => {
+          const hasLog = !!row.runLog;
           const installedDate = new Date(row.installedAt);
           const removedDate = row.removedAt ? new Date(row.removedAt) : null;
-          const manglerDriftsdata = !row.runLog;
           const duration = removedDate
             ? formatDuration(removedDate.getTime() - installedDate.getTime())
             : "—";
 
           return (
-            <div key={row.id} className="logItem">
+            <div
+              key={row.id}
+              className={`logItem ${hasLog ? "ok" : "mangler"}`}
+            >
               <div className="logInfo">
                 <div className="logMain">
-                  Blad <span className="bladeId">{row.blade.IdNummer}</span> fra{" "}
                   <span className="sawName">{row.saw.name}</span>
+                  <span style={{ margin: "0 8px", color: "#cbd5e1" }}>/</span>
+                  <span className="bladeId">#{row.blade.IdNummer}</span>
                   {row.removedReason && (
                     <span
-                      style={{ marginLeft: "8px" }}
-                      className="pill pillReason"
+                      style={{
+                        marginLeft: "12px",
+                        fontSize: "12px",
+                        fontWeight: 700,
+                        color: "#64748b",
+                        background: "#f1f5f9",
+                        padding: "2px 8px",
+                        borderRadius: "6px",
+                      }}
                     >
                       {row.removedReason}
                     </span>
@@ -208,85 +227,76 @@ const UnmountList: React.FC<Props> = ({
                 </div>
 
                 <div className="logMeta">
-                  <div className="metaItem">
+                  <div className="metaTime">
                     <span>
-                      📅{" "}
-                      {installedDate.toLocaleString("nb-NO", {
-                        dateStyle: "short",
-                        timeStyle: "short",
+                      {installedDate.toLocaleDateString("nb-NO", {
+                        day: "2-digit",
+                        month: "short",
                       })}
                     </span>
-                    <span>→</span>
+                    <span style={{ color: "#cbd5e1" }}>→</span>
                     <span>
-                      {removedDate
-                        ? removedDate.toLocaleString("nb-NO", {
-                            dateStyle: "short",
-                            timeStyle: "short",
-                          })
-                        : "—"}
+                      {removedDate?.toLocaleDateString("nb-NO", {
+                        day: "2-digit",
+                        month: "short",
+                      }) ?? "Aktiv"}
                     </span>
                   </div>
-                  <div
-                    className="metaItem"
-                    style={{ color: row.removedNote ? "#d9dbdb" : "#9ca3af" }}
-                  >
-                    {row.removedNote ?? "Demontert"}
-                  </div>
+                  {row.removedNote && (
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: "#94a3b8",
+                        fontStyle: "italic",
+                      }}
+                    >
+                      "{row.removedNote}"
+                    </div>
+                  )}
                 </div>
               </div>
 
               <div className="statusSide">
-                <div className="durationBox">⏱ {duration}</div>
-                <span
-                  className={`pill ${manglerDriftsdata ? "pillWarn" : "pillOk"}`}
-                >
-                  {manglerDriftsdata
-                    ? "⚠️ Ingen logg"
-                    : `✅ ${row.runLog?.stokkAnt ?? 0} stk`}
-                </span>
+                <div className="durationBadge">⏱ {duration}</div>
+                <div className={`pillStatus ${hasLog ? "ok" : "warn"}`}>
+                  {hasLog
+                    ? `✅ ${row.runLog?.stokkAnt ?? 0} stk`
+                    : "⚠️ Mangler data"}
+                </div>
               </div>
 
-              {/* HANDLINGS-KNAPPER */}
               <div className="actionButtons">
-                <button
-                  onClick={() => onEdit && onEdit(row)}
-                  title="Rediger"
-                  className="btnAction btnEdit"
-                >
+                <button className="btnSmall" onClick={() => onEdit?.(row)}>
                   <svg
-                    width="18"
-                    height="18"
+                    width="16"
+                    height="16"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
                     <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                    <path d="m15 5 4 4" />
                   </svg>
                 </button>
                 <button
+                  className="btnSmall btnDelete"
                   onClick={() => onDelete?.(row)}
-                  title="Slett"
-                  className="btnAction btnDelete"
                 >
                   <svg
-                    width="18"
-                    height="18"
+                    width="16"
+                    height="16"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="2"
+                    strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   >
                     <path d="M3 6h18" />
                     <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
                     <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                    <line x1="10" x2="10" y1="11" y2="17" />
-                    <line x1="14" x2="14" y1="11" y2="17" />
                   </svg>
                 </button>
               </div>

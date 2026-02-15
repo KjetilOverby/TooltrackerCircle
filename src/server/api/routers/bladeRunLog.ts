@@ -41,31 +41,66 @@ export const bladeRunLogRouter = createTRPCRouter({
       loggedAt: z.date().optional(),
       sagtid: z.number().nullable().optional(),
       temperatur: z.number().nullable().optional(),
-      sideklaring: z.number().nullable().optional(), // Den du sa fungerte
+      sideklaring: z.number().nullable().optional(),
       ampere: z.number().nullable().optional(),
       stokkAnt: z.number().nullable().optional(),
-      feilkode: z.string().nullable().optional(), // MÅ MED HER
-      alt: z.string().nullable().optional(),      // MÅ MED HER
+      feilkode: z.string().nullable().optional(),
+      alt: z.string().nullable().optional(),
+      createService: z.object({
+        serviceType: z.string(),
+        note: z.string().optional(),
+        feilkode: z.string().optional(),
+      }).optional(),
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const { installId, ...data } = input;
+    const { installId, createService, ...data } = input;
 
-    return ctx.db.bladeRunLog.upsert({
-      where: { installId }, // 🔑 pga @unique
-      create: {
-        orgId: ctx.auth.orgId!,
-        installId,
-        ...data,
-        createdById: ctx.auth.userId,
-      },
-      update: {
-        ...data,
-        updatedAt: new Date(),
-      },
+    return await ctx.db.$transaction(async (tx) => {
+      // 1. Finn installasjonen først. Da VET vi at vi har bladeId.
+      const install = await tx.bladeInstall.findUnique({
+        where: { id: installId },
+        select: { bladeId: true }
+      });
+
+      if (!install) {
+        throw new Error(`Fant ingen installasjon med ID: ${installId}`);
+      }
+
+      // 2. Kjør upsert på driftsloggen
+      const log = await tx.bladeRunLog.upsert({
+        where: { installId },
+        create: {
+          orgId: ctx.auth.orgId!,
+          installId,
+          ...data,
+          createdById: ctx.auth.userId,
+        },
+        update: {
+          ...data,
+          updatedAt: new Date(),
+        },
+      });
+
+      // 3. Opprett service hvis det er valgt
+      if (createService) {
+        // Her bruker vi install.bladeId som vi hentet i steg 1
+        await tx.bladeService.create({
+          data: {
+            orgId: ctx.auth.orgId!,
+            bladeId: install.bladeId,
+            serviceType: createService.serviceType,
+            datoInn: new Date(),
+            feilkode: createService.feilkode ?? null,
+            note: createService.note ?? null,
+            createdById: ctx.auth.userId,
+          },
+        });
+      }
+
+      return log;
     });
   }),
-
 
   /**
    * Opprett ny runLog (etterregistrering / feil / stopp / service)

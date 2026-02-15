@@ -209,11 +209,24 @@ if (!orgId) {
                 },
                 
               },
-            
+              services: {
+                // 👇 Vi legger til en filter-betingelse her
+                where: {
+                  datoUt: null, 
+                },
+                orderBy: { createdAt: "desc" },
+                take: 1,
+                select: {
+                  id: true,
+                  serviceType: true,
+                  datoInn: true, // Greit å ha hvis du vil vise hvor lenge den har vært der
+                },
+              },
+          
               
             },
           },
-      
+         
           saw: {
             select: {
               id: true,
